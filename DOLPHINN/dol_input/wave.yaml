@@ -1,0 +1,99 @@
+training_dataset: /Users/marku/Documents/DT_prediction_model/DOLPHINN/data/Con_set_Ts_025_180_Option1.csv
+dof:
+  - "PtfmTDX_Floater"
+  - "PtfmTDY_Floater"
+  - "PtfmTDZ_Floater"
+  # - "PtfmRDX_Floater"
+  # - "PtfmRDY_Floater"
+  # - "PtfmRDZ_Floater"
+  - "Vx_Floater_local"
+  - "Vy_Floater_local"
+  - "Vz_Floater_local"
+  # - "Wx_Floater"
+  # - "Wy_Floater"
+  # - "Wz_Floater"
+
+  - "PtfmTDX_SOV"
+  - "PtfmTDY_SOV"
+  - "PtfmTDZ_SOV"
+  # - "PtfmRDX_SOV"
+  # - "PtfmRDY_SOV"
+  # - "PtfmRDZ_SOV"
+  - "Vx_SOV_local"
+  - "Vy_SOV_local"
+  - "Vz_SOV_local"
+  # - "Wx_SOV"
+  # - "Wy_SOV"
+  # - "Wz_SOV"
+
+  # - "telescoping"
+  # - "luffing"
+  # - "slewing"
+  # - "telescoping_vel"
+  # - "luffing_vel"
+  # - "slewing_vel"
+unit:
+  - "[m]"
+  - "[m]"
+  - "[m]"
+  # - "[deg]"
+  # - "[deg]"
+  # - "[deg]"
+  - "[m/s]"
+  - "[m/s]"
+  - "[m/s]"
+  # - "[deg/s]"
+  # - "[deg/s]"
+  # - "[deg/s]"
+
+  - "[m]"
+  - "[m]"
+  - "[m]"
+  # - "[deg]"
+  # - "[deg]"
+  # - "[deg]"
+  - "[m/s]"
+  - "[m/s]"
+  - "[m/s]"
+  # - "[deg/s]"
+  # - "[deg/s]"
+  # - "[deg/s]"
+
+  # - "m"
+  # - "deg"
+  # - "deg"
+  # - "[m/s]"
+  # - "[deg/s]"
+  # - "[deg/s]"
+conversion:
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  # - 1
+  # - 1
+  # - 1
+  # - 1
+  # - 1
+  # - 1
+time_horizon: 20
+nm: 0.8
+hidden_layer: 1
+neuron_number: 180
+epochs: 8
+batch_time: 20
+timestep: 1.0
+lr: 0.0001
+dropout: 0.005
+train_ratio: 0.6
+valid_ratio: 0.25
+wind_prediction: False
+wave_prediction: True
