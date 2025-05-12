@@ -1,0 +1,12 @@
+MLSTM_MODEL_NAME='Option3_with_velo'
+timestep=0.25
+plot_figure=True
+time_horizon=20.0
+pred_error_x=0.0
+pred_error_y=0.0
+pred_freq=5.0
+save_csv=True
+save_csv_time=590
+FOWT_pred_state='telescoping'
+early_stop_enabled=True
+early_stop_time=600
