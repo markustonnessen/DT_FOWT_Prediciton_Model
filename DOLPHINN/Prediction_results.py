@@ -192,8 +192,8 @@ if sim_type == "Option3":
             # Threshold lines
             axs[i].axhline(t, color="orange", linestyle="--", label=f"Personnel Transfer ±{t}")
             axs[i].axhline(-t, color="orange", linestyle="--")
-            axs[i].axhline(s, color="red", linestyle=":", label=f"Stay Connected ±{s}")
-            axs[i].axhline(-s, color="red", linestyle=":")
+            axs[i].axhline(s, color="red", linestyle="--", label=f"Stay Connected ±{s}")
+            axs[i].axhline(-s, color="red", linestyle="--")
 
             # Predicted exceedances
             idx_pt_pred = (y_pred < -t) | (y_pred > t)
@@ -223,6 +223,10 @@ if sim_type == "Option3":
     axs[-1].set_xlabel("Time [s]")
     fig.subplots_adjust(right=0.82)
     fig.suptitle(f"Predicted Gangway Motions and Velocities {option_label}", fontsize=15)
+    plot_path1 = os.path.join(prediction_dir, f"GangwayComparison_{option_label}_{save_time_str}s_WD_{WavDir}deg.pdf")
+    fig.savefig(plot_path1, dpi=300)
+    plt.show()
+    print(f"[INFO] Saved DOF comparison plot to: {plot_path1}")
 
 else:
     # Default behavior for SOV, Floater, Option1 — system states without thresholds
@@ -247,9 +251,10 @@ else:
 
     # Save the DOF comparison plot
     fig.tight_layout(rect=[0, 0, 1, 0.96])
-    plot_path1 = os.path.join(prediction_dir, f"{option_label}_DOF_vs_Measurement_{save_time_str}s_WD{WavDir}deg.png")
+    plot_path1 = os.path.join(prediction_dir, f"{option_label}_DOFs_vs_Measurement_{save_time_str}s_WD{WavDir}deg.pdf")
     fig.savefig(plot_path1, dpi=300)
     print(f"[INFO] Saved DOF comparison plot to: {plot_path1}")
+    plt.show()
 
 
 
@@ -372,8 +377,8 @@ if can_compute_gangway:
 
             axs2[i].axhline(t, color="orange", linestyle="--", label=f"Personnel Transfer ±{t}")
             axs2[i].axhline(-t, color="orange", linestyle="--")
-            axs2[i].axhline(s, color="red", linestyle=":", label=f"Stay Connected ±{s}")
-            axs2[i].axhline(-s, color="red", linestyle=":")
+            axs2[i].axhline(s, color="red", linestyle="--", label=f"Stay Connected ±{s}")
+            axs2[i].axhline(-s, color="red", linestyle="--")
 
             pt_warning = ((y_pred < -t) | (y_pred > t)).any() or ((y_meas < -t) | (y_meas > t)).any()
             sc_warning = ((y_pred < -s) | (y_pred > s)).any() or ((y_meas < -s) | (y_meas > s)).any()
@@ -395,7 +400,7 @@ if can_compute_gangway:
     fig2.subplots_adjust(right=0.82)
     fig2.suptitle(f"Predicted Gangway Motions and Velocities {option_label}", fontsize=15)
     plt.tight_layout(rect=[0, 0, 1, 0.96])
-    path2 = os.path.join(prediction_dir, f"GangwayComparison_{option_label}_{save_time_str}s_WD_{WavDir}deg.png")
+    path2 = os.path.join(prediction_dir, f"GangwayComparison_{option_label}_{save_time_str}s_WD_{WavDir}deg.pdf")
     plt.savefig(path2, dpi=300)
 
     df_gangway_pred.to_csv(os.path.join(prediction_dir, f"PredictedGangwayMotionsAndVelocities_{option_label}_{save_time_str}s_WD_{WavDir}deg.csv"), index=False)
