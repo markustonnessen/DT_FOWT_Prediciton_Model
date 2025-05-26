@@ -3,7 +3,7 @@
 ## Main Script: Run_DT_framework.py
 
 This user manual represents the different files and codes developed and used by the authors, within the DT framework. The MLSTM model utilized in this framework are obtained from the GitHub repository of Alkarem, at https://github.com/Yuksel-Rudy/DOLPHINN.git. 
-The main driver file, `Launch_DT_framework.py`, initiates the DT framework and defines the configuration for the SIMA model used for prediction. The `Launch_DT_framework.py` script is located at https://github.com/markustonnessen/DT_FOWT_Prediciton_Model/blob/main/Launch_DT_framework.py and the configurations within this script are explained below. 
+The main driver file, `Launch_DT_framework.py`, initiates the DT framework and defines the configuration for the SIMA model used for prediction.
 
 ### SIMA Parameters
 
