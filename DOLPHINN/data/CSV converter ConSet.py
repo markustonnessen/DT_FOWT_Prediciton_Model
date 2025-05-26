@@ -5,12 +5,11 @@ import os
 from natsort import natsorted
 
 # === CONFIGURATION ===
-input_h5_path = r"C:\Users\marku\Documents\DT_prediction_model\DOLPHINN\data\WaveDir_-30.h5"
-output_csv_path = r"C:\Users\marku\Documents\DT_prediction_model\DOLPHINN\data\WaveDir_-30.csv"
+input_h5_path = r"C:\Users\marku\Documents\DT_prediction_model\DOLPHINN\data\WaveDir_0.h5"
+output_csv_path = r"C:\Users\marku\Documents\DT_prediction_model\DOLPHINN\data\WaveDir_0.csv"
 
-# === CHOOSE WHICH CONDITION SETS TO INCLUDE ===
-# Set this to None to include all, or use (start, end) to select a range
-condition_range = (1, 10)
+# === CHOOSE WHICH CONDITION SETS FROM RAN SIMA SIMULATION, TO INCLUDE ===
+condition_range = (1, 4)
 
 # === OPEN HDF5 FILE ===
 hf = h5py.File(input_h5_path, 'r')
@@ -177,9 +176,8 @@ for condition in condition_sets:
         luffing = np.degrees(np.arcsin((global_hookup_data['Z']-global_gangway_data['Z'])/distances))
         
         slewing = np.degrees(np.arctan2(global_hookup_data['X'] - global_gangway_data['X'],
-                              global_hookup_data['Y'] - global_gangway_data['Y'])) #+ global_sov_data['SOV - Z Rotation']
+                              global_hookup_data['Y'] - global_gangway_data['Y']))
         
-        # --- Compute time-segment based on current offset ---
         time_segment = [current_time_offset + i * time_step for i in range(len(global_sov_data))]
 
         # ======================================== VELOCITY =======================================================
@@ -193,18 +191,15 @@ for condition in condition_sets:
                             global_sov_data.loc[i, 'SOV - Z Angular Velocity']])
             v_trans = transform_velocity(v_A, omega, gangway_position)
             transformed_gangway_velocities.append(v_trans)
-        V_gangway_local = np.stack(transformed_gangway_velocities, axis=0)  # shape (n, 3)
+        V_gangway_local = np.stack(transformed_gangway_velocities, axis=0)
         
-        # Convert local gangway velocities to global using the rotation matrices
         theta_x = global_sov_data['SOV - X Rotation'].to_numpy()
         theta_y = global_sov_data['SOV - Y Rotation'].to_numpy()
         theta_z = global_sov_data['SOV - Z Rotation'].to_numpy()
         rotation_matrices = np.array([euler_to_rotation_matrix(rx, ry, rz) 
                                     for rx, ry, rz in zip(theta_x, theta_y, theta_z)])
-        # Apply the rotation for each timestep
         V_gangway_global = np.einsum('ijk,ik->ij', rotation_matrices, V_gangway_local)
         
-        # Compute hookup velocity using Floater data (assumed already in global frame)
         transformed_hookup_velocities = []
         for i in range(len(global_floater_data)):
             v_A = np.array([global_floater_data.loc[i, 'floater - X Velocity'],
@@ -218,25 +213,21 @@ for condition in condition_sets:
         V_hookup_global = np.stack(transformed_hookup_velocities, axis=0)
 
 
-        # --- TELESCOPING Displacement ---
         d_vector_x = global_gangway_data['X'] - global_hookup_data['X']
         d_vector_y = global_gangway_data['Y'] - global_hookup_data['Y']
         d_vector_z = global_gangway_data['Z'] - global_hookup_data['Z']
         distances = np.sqrt(d_vector_x**2 + d_vector_y**2 + d_vector_z**2)
         telescoping_disp = distances
 
-        # --- Relative velocity and projection (telescoping velocity) ---
         V_rel = V_gangway_global - V_hookup_global
         unit_dx = d_vector_x / distances
         unit_dy = d_vector_y / distances
         unit_dz = d_vector_z / distances
         telescoping_vel = V_rel[:, 0]*unit_dx + V_rel[:, 1]*unit_dy + V_rel[:, 2]*unit_dz
 
-        # --- Angular Velocities ---
         luffing_vel = np.gradient(luffing, time_segment)
         slewing_vel = np.gradient(slewing, time_segment)
 
-        # Now build DataFrame
         gangway_metrics_df = pd.DataFrame({
             'Time': time_segment,
             'wave': wave_Floater[:len(time_segment)],
@@ -280,8 +271,6 @@ for condition in condition_sets:
         global_gangway_hookup_data['Time'] = time_segment
         current_time_offset += len(global_sov_data) * time_step
         
-        # === STORE LOCAL VELOCITIES (transformed) for Floater and SOV ===
-        # Already computed V_hookup_global and V_gangway_global (shape [n,3])
         floater_vel_df = pd.DataFrame(V_hookup_global, columns=[
             "Vx_Floater_local", "Vy_Floater_local", "Vz_Floater_local"
         ])
@@ -289,7 +278,6 @@ for condition in condition_sets:
             "Vx_SOV_local", "Vy_SOV_local", "Vz_SOV_local"
         ])
 
-        # Angular velocities were read directly, convert back to deg/s for consistency
         floater_ang_vel_df = pd.DataFrame({
             "Wx_Floater": np.rad2deg(global_floater_data['floater - X Angular Velocity']),
             "Wy_Floater": np.rad2deg(global_floater_data['floater - Y Angular Velocity']),
@@ -302,7 +290,6 @@ for condition in condition_sets:
             "Wz_SOV": np.rad2deg(global_sov_data['SOV - Z Angular Velocity']),
         })
 
-        # === Combine all into same dataframe ===
         combined_velocities = pd.concat([
             floater_vel_df.reset_index(drop=True),
             sov_vel_df.reset_index(drop=True),
@@ -310,7 +297,6 @@ for condition in condition_sets:
             sov_ang_vel_df.reset_index(drop=True)
         ], axis=1)
 
-        # Attach to global_gangway_hookup_data before saving
         global_gangway_hookup_data = pd.concat([
             global_gangway_hookup_data.reset_index(drop=True),
             combined_velocities.reset_index(drop=True)
@@ -318,25 +304,20 @@ for condition in condition_sets:
 
         combined_gangway_data = pd.concat([combined_gangway_data, global_gangway_hookup_data], ignore_index=True)
 
-
-        # --- TELESCOPING Displacement ---
         d_vector_x = global_gangway_data['X'] - global_hookup_data['X']
         d_vector_y = global_gangway_data['Y'] - global_hookup_data['Y']
         d_vector_z = global_gangway_data['Z'] - global_hookup_data['Z']
         distances = np.sqrt(d_vector_x**2 + d_vector_y**2 + d_vector_z**2)
         telescoping_disp = distances
 
-
-        # Relative velocity and its projection onto the unit vector (telescoping velocity)
         V_rel = V_gangway_global - V_hookup_global
         unit_dx = d_vector_x / distances
         unit_dy = d_vector_y / distances
         unit_dz = d_vector_z / distances
         telescoping_vel = V_rel[:, 0]*unit_dx + V_rel[:, 1]*unit_dy + V_rel[:, 2]*unit_dz
-        
-        # --- Angular Velocities ---
+
         luffing_vel = np.gradient(luffing, time_segment)
-        slewing_vel = np.gradient(slewing, time_segment) # d(beta)/dt
+        slewing_vel = np.gradient(slewing, time_segment) 
 
 
     except KeyError as e:
@@ -374,18 +355,13 @@ sov_df.to_csv(sov_path, index=False)
 print(f"Floater CSV saved at: {floater_path}")
 print(f"SOV CSV saved at: {sov_path}")
 
-# === SAVE GANGWAY MOTIONS CSV ===
 gangway_motion_path = base_path + "_Option3.csv"
 combined_gangway_metrics.to_csv(gangway_motion_path, index=False)
 print(f"option3 motion CSV saved at: {gangway_motion_path}")
 
-# === COMBINE FLOATER AND SOV (EXCLUDING wave_SOV) ===
-sov_df_no_wave = sov_df.drop(columns=["wave"])  # 'wave' in sov_df is wave_SOV
-
-# Merge on Time
+sov_df_no_wave = sov_df.drop(columns=["wave"])
 combined_Option1_df = pd.merge(floater_df, sov_df_no_wave, on="Time", how="inner")
 
-# Save combined CSV
 Option1_path = base_path + "_Option1.csv"
 combined_Option1_df.to_csv(Option1_path, index=False)
 print(f"Option1 motion CSV saved at: {Option1_path}")
