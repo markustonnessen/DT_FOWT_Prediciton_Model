@@ -2,8 +2,8 @@
 
 ## Main Script: Run_DT_framework.py
 
-This user manual represents the different files and codes developed and used by the authors, within the DT framework. The complete repository are available at https://github.com/markustonnessen/DT_FOWT_Prediciton_Model. The MLSTM model utilized in this framework are obtained from the GitHub repository of Alkarem, at https://github.com/Yuksel-Rudy/DOLPHINN.git. 
-The main driver file, `Launch_DT_framework.py`, initiates the DT framework and defines the configuration for the SIMA model used for prediction. The `Launch_DT_framework.py` script is located at \url{https://github.com/markustonnessen/DT_FOWT_Prediciton_Model/blob/main/Launch_DT_framework.py and the configurations within this script are explained below. 
+This user manual represents the different files and codes developed and used by the authors, within the DT framework. The MLSTM model utilized in this framework are obtained from the GitHub repository of Alkarem, at https://github.com/Yuksel-Rudy/DOLPHINN.git. 
+The main driver file, `Launch_DT_framework.py`, initiates the DT framework and defines the configuration for the SIMA model used for prediction. The `Launch_DT_framework.py` script is located at https://github.com/markustonnessen/DT_FOWT_Prediciton_Model/blob/main/Launch_DT_framework.py and the configurations within this script are explained below. 
 
 ### SIMA Parameters
 
@@ -52,31 +52,31 @@ These parameters configure the prediction model and its output:
 - `early_stop_time = 600`
 
 
-The trained model gets a `MLSTM_MODEL_NAME`. By setting this to `"Option2\_LT\_WD0\_Floater"` the trained model for Option2, long-term sea states and wave direction of 0 deg. 
+The trained model gets a `MLSTM_MODEL_NAME`. By setting this to `"Option2_LT_WD0_Floater"` the trained model for Option2, long-term sea states and wave direction of 0 deg. 
 
 `Prediction_state` refers to the desired state to plot and showcase during prediction. After the prediction is done, all predicted system states are highlighted in plots. Only one system state is showcased during prediction, as showcasing them all would need great computational power. 
 
-`plot\_figure` acts as a toggle button to control whether the plot with the desired `Prediction\_state` shall be generated or not.
+`plot_figure` acts as a toggle button to control whether the plot with the desired `Prediction_state` shall be generated or not.
 
 `timestep` is the base time resolution of the simulation and prediction data. It defines how often the data points are sampled in the measured input signals and predicted output sequences. 
 
-`time\_horizon` sets how far into the future, in seconds, each prediction extends, for each `timestep`.
+`time_horizon` sets how far into the future, in seconds, each prediction extends, for each `timestep`.
 
-`pred\_error\_x` and `pred\_error\_y` are manual constant offsets applied to align predicted data better in relation to the measured data, in the x- and y-axis. Used as desired.
+`pred_error_x` and `pred_error_y` are manual constant offsets applied to align predicted data better in relation to the measured data, in the x- and y-axis. Used as desired.
 
-`pred\_freq` refers to how often the prediction model is triggered to make a new prediction, in seconds. This parameter is adjustable for the user and depends on the computational efficiency desired.  
+`pred_freq` refers to how often the prediction model is triggered to make a new prediction, in seconds. This parameter is adjustable for the user and depends on the computational efficiency desired.  
 
-`save\_csv` acts as a toggle button to control whether or not a .csv file with the prediction history shall be saved.
+`save_csv` acts as a toggle button to control whether or not a .csv file with the prediction history shall be saved.
 
-`save\_csv\_time` refers to when the prediction history .csv file shall be saved, and includes all previous prediction data from when the prediction started.
+`save_csv_time` refers to when the prediction history .csv file shall be saved, and includes all previous prediction data from when the prediction started.
 
-`early\_stop\_enabled` acts as a toggle button to enable an early stopping of the prediction model, even tho the SIMA simulation extends for a longer duration. This is useful in scenarios where predictions for the whole SIMA simulation aren't necessary to generate.
+`early_stop_enabled` acts as a toggle button to enable an early stopping of the prediction model, even tho the SIMA simulation extends for a longer duration. This is useful in scenarios where predictions for the whole SIMA simulation aren't necessary to generate.
 
-`early\_stop\_time` refers to when, in time, the prediction process shall stop if `early\_stop\_enabled = True`. If this is set to `early\_stop\_enabled = False`, the prediction process runs throughout the whole process. 
+`early_stop_time` refers to when, in time, the prediction process shall stop if `early_stop_enabled = True`. If this is set to `early_stop_enabled = False`, the prediction process runs throughout the whole process. 
 
 ### Internal Paths and Files
 
-In order to be able to run the \acs{DT framework and SIMA model, SIMA has to be downloaded, used with a valid license, and the system needs to know where to initiate the software. It also needs to make additional files for the framework to function, as the framework utilizes these files to know which states to use for prediction and data collection.
+In order to be able to run the DT framework and SIMA model, SIMA has to be downloaded, used with a valid license, and the system needs to know where to initiate the software. It also needs to make additional files for the framework to function, as the framework utilizes these files to know which states to use for prediction and data collection.
 
 - `pathToSima = r"C:\Users\marku\Documents\DT_prediction_model\DOLPHINN\SIMA_simulation\sima-4.8.0-windows\sima.exe"`
 - `pathToWorkspace = r"C:\Users\marku\Documents\DT_prediction_model\DOLPHINN\SIMA_simulation"`
@@ -90,7 +90,7 @@ In order to be able to run the \acs{DT framework and SIMA model, SIMA has to be 
 
 `pathToCommandFile` is the path to the commandsModel.txt, which sends the desired manually set SIMA workflow parameters to the SIMA software before the simulation starts. Within this file, the path to the desired .stask model file needs to be updated. 
 
-`args_path` is the path to the `sima_args.txt`, which sends the desired \acs{MLSTM and prediction parameters to the system. The `Prediction_pipeline.py` utilizes this file to send data where it is supposed to be. 
+`args_path` is the path to the `sima_args.txt`, which sends the desired MLSTM and prediction parameters to the system. The `Prediction_pipeline.py` utilizes this file to send data where it is supposed to be. 
 
 
 ## Additional Python Files in the Framework
@@ -156,3 +156,12 @@ In order to be able to run the \acs{DT framework and SIMA model, SIMA has to be 
 3. Prediction:
     Open `Launch_DT_framework`. Within this file multiple parameters can be adjusted for the SIMA simulation, and all relevant file paths needs to be updated as mentioned over.
     The `MLSTM_MODEL_NAME = "Option3_LT_WD0"` needs to be set to a valid trained model folder name. The `Prediction_state = "PtfmTDZ_SOV"` needs to be set to a valid state used on training, from `wave.yaml`.
+
+
+## Acknowledgements
+
+The project has utilizd codes fromt eh following repositories:
+
+- `DOLPHINN`: An MLSTM model has been developed by Yuksel R. Alkarem for predicting behaviors based on incoming wave data in offshore environments, at the GitHub repositroy https://github.com/Yuksel-Rudy/DOLPHINN.git
+- `FOWT_Digital_Twin_ROSCO`: Previous work done by Fredrik Selheim Flesland and Hans Petter Tharaldsen has been utilized in this framework. Some exsisting files has been adjusted from their repositroy, to suit this framework. Their repositry is located at https://github.com/HPtharaldsen/FOWT_Digital_Twin_ROSCO.git
+- `NUWind Project`: This project has been carried it in a collaboration between the Norwegian University of Science and Technology (NTNU) and the University of Maine (UMaine). The students have gotten the opportunity to collabarate with each other and carry out research within the offshore wind field. 
