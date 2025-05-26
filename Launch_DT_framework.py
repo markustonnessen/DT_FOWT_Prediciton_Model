@@ -13,15 +13,15 @@ heading = 180
 xref = 25.875
 yref = -62.817
 hs = 3
-tp = 14.7
+tp = 11
 xhook = 25.875
 yhook = -44.817
 SimLen = 2000
 WavDir = 0
 
-## --- MLSTM & PREDICTION PARAMETERS (sima_to_python.py) ---
-MLSTM_MODEL_NAME = "Option1_LT_WD0"
-FOWT_pred_state = "PtfmTDZ_Floater"
+## --- MLSTM & PREDICTION PARAMETERS ---
+MLSTM_MODEL_NAME = "Option2_LT_WD0_SOV"
+Prediction_state = "PtfmTDZ_SOV"
 plot_figure = True
 
 timestep = 0.25
@@ -58,8 +58,6 @@ lines[1] = (
 
 with open(pathToCommandFile, "w") as file:
     file.writelines(lines)
-
-# print(f"[INFO] Updated {pathToCommandFile} with simulation inputs.")
 
 # ===================================================
 # === PLOT FLOATER & POSITIONS ======================
@@ -101,7 +99,6 @@ ax.plot([xref, x_front], [yref, y_front], color='blue', linewidth=2)
 ax.plot([xref, x_aft], [yref, y_aft], color='blue', linewidth=2)
 
 gangway_distance = np.sqrt((xhook - xref) ** 2 + (yhook - yref) ** 2)
-# print(f"[INFO] Gangway distance: {gangway_distance:.2f} meters")
 plt.title("SIMA Setup Layout")
 plt.show()
 
@@ -119,7 +116,7 @@ params = {
     "pred_freq": pred_freq,
     "save_csv": save_csv,
     "save_csv_time": save_csv_time,
-    "FOWT_pred_state": FOWT_pred_state,
+    "Prediction_state": Prediction_state,
     "early_stop_enabled": early_stop_enabled,
     "early_stop_time": early_stop_time,
     "WavDir": WavDir
@@ -129,10 +126,8 @@ with open(args_path, "w") as f:
     for key, val in params.items():
         f.write(f"{key}={repr(val)}\n")
 
-# print(f"[INFO] Saved model & prediction args to: {args_path}")
-
 # ===================================================
-# === LAUNCH SIMA ===================================
+# ================= LAUNCH SIMA =====================
 # ===================================================
 
 subprocess.check_call([
