@@ -2,13 +2,8 @@
 
 ## Main Script: Run_DT_framework.py
 
-This manual describes the different files and Python scripts developed and used by the authors within the DT framework. The complete repository is available at:
-https://github.com/markustonnessen/DT_FOWT_Prediciton_Model
-
-The MLSTM model utilized in this framework is obtained from the GitHub repository of Alkarem (2024).
-
-The main driver file, `Run_DT_framework.py`, initiates the DT framework and defines the configuration for the SIMA model used for prediction. The script is located at:
-https://github.com/markustonnessen/DT_FOWT_Prediciton_Model/blob/main/Launch_DT_framework.py
+This user manual represents the different files and codes developed and used by the authors, within the DT framework. The complete repository are available at https://github.com/markustonnessen/DT_FOWT_Prediciton_Model. The MLSTM model utilized in this framework are obtained from the GitHub repository of Alkarem, at https://github.com/Yuksel-Rudy/DOLPHINN.git. 
+The main driver file, `Launch_DT_framework.py`, initiates the DT framework and defines the configuration for the SIMA model used for prediction. The `Launch_DT_framework.py` script is located at \url{https://github.com/markustonnessen/DT_FOWT_Prediciton_Model/blob/main/Launch_DT_framework.py and the configurations within this script are explained below. 
 
 ### SIMA Parameters
 
@@ -24,13 +19,20 @@ These parameters are used as input for the SIMA workflow simulation and can be a
 - `SimLen = 2000`
 - `WavDir = 0`
 
-Descriptions:
-- `heading`: Heading of the SOV in the simulation.
-- `xref`, `yref`: Global position of the SOV.
-- `hs`, `tp`: Significant wave height and peak period.
-- `xhook`, `yhook`: Gangway hookup position.
-- `SimLen`: Duration of the simulation.
-- `WavDir`: Incoming wave direction.
+
+These parameters can be adjusted for the SIMA workflow simulation. The complete SIMA model is a .stask file, with various models and parameters which are adjustable. These parameters do not need manually adjusting, and are saved in the .stask. 
+
+heading refers to the heading of the SOV in the SIMA workflow simulation. 
+    
+xref and yref refer to the global position of the SOV in x- and y-direction. 
+    
+hs and tp are the significant wave height and peak period, used for the simulated sea state. 
+    
+xhook and yhook refer to the global hookup position for the gangway, modeled as a point, in the x- and y-directions. 
+    
+SimLen refers to the simulation length for the SIMA workflow.
+    
+WavDir refers to the incoming wave direction in the simulation.
 
 ### MLSTM and Prediction Parameters
 
@@ -49,37 +51,56 @@ These parameters configure the prediction model and its output:
 - `early_stop_enabled = True`
 - `early_stop_time = 600`
 
-Descriptions:
-- Defines the model to use, which state to predict and how often to run predictions.
-- `plot_figure`: If `True`, the predicted state will be plotted.
-- `timestep`: Time resolution for data sampling.
-- `time_horizon`: Duration of each prediction.
-- `save_csv`: If `True`, results will be saved as `.csv`.
+
+The trained model gets a `MLSTM_MODEL_NAME`. By setting this to `"Option2\_LT\_WD0\_Floater"` the trained model for Option2, long-term sea states and wave direction of 0 deg. 
+
+`Prediction_state` refers to the desired state to plot and showcase during prediction. After the prediction is done, all predicted system states are highlighted in plots. Only one system state is showcased during prediction, as showcasing them all would need great computational power. 
+
+`plot\_figure` acts as a toggle button to control whether the plot with the desired `Prediction\_state` shall be generated or not.
+
+`timestep` is the base time resolution of the simulation and prediction data. It defines how often the data points are sampled in the measured input signals and predicted output sequences. 
+
+`time\_horizon` sets how far into the future, in seconds, each prediction extends, for each `timestep`.
+
+`pred\_error\_x` and `pred\_error\_y` are manual constant offsets applied to align predicted data better in relation to the measured data, in the x- and y-axis. Used as desired.
+
+`pred\_freq` refers to how often the prediction model is triggered to make a new prediction, in seconds. This parameter is adjustable for the user and depends on the computational efficiency desired.  
+
+`save\_csv` acts as a toggle button to control whether or not a .csv file with the prediction history shall be saved.
+
+`save\_csv\_time` refers to when the prediction history .csv file shall be saved, and includes all previous prediction data from when the prediction started.
+
+`early\_stop\_enabled` acts as a toggle button to enable an early stopping of the prediction model, even tho the SIMA simulation extends for a longer duration. This is useful in scenarios where predictions for the whole SIMA simulation aren't necessary to generate.
+
+`early\_stop\_time` refers to when, in time, the prediction process shall stop if `early\_stop\_enabled = True`. If this is set to `early\_stop\_enabled = False`, the prediction process runs throughout the whole process. 
 
 ### Internal Paths and Files
 
-Ensure that SIMA is installed, licensed, and the following paths are correctly set:
+In order to be able to run the \acs{DT framework and SIMA model, SIMA has to be downloaded, used with a valid license, and the system needs to know where to initiate the software. It also needs to make additional files for the framework to function, as the framework utilizes these files to know which states to use for prediction and data collection.
 
 - `pathToSima = r"C:\Users\marku\Documents\DT_prediction_model\DOLPHINN\SIMA_simulation\sima-4.8.0-windows\sima.exe"`
 - `pathToWorkspace = r"C:\Users\marku\Documents\DT_prediction_model\DOLPHINN\SIMA_simulation"`
 - `pathToCommandFile = os.path.join(pathToWorkspace, "commandsModel.txt")`
 - `args_path = os.path.join(pathToWorkspace, "sima_args.txt")`
 
-Descriptions:
-- `pathToSima`: Path to the SIMA executable.
-- `pathToCommandFile`: Sends workflow parameters to SIMA.
-- `args_path`: Used to pass prediction parameters.
 
----
+`pathToSima` refers to where the `sima.exe` file is located, in order to execute the SIMA workflow simulation.
+
+`pathToWorkspace` refers to where the `SIMA_simulation` folder is located. Within the GitHub repository, this folder is located at the correct location, and the user do not need to adjust this path if the repository is used.
+
+`pathToCommandFile` is the path to the commandsModel.txt, which sends the desired manually set SIMA workflow parameters to the SIMA software before the simulation starts. Within this file, the path to the desired .stask model file needs to be updated. 
+
+`args_path` is the path to the `sima_args.txt`, which sends the desired \acs{MLSTM and prediction parameters to the system. The `Prediction_pipeline.py` utilizes this file to send data where it is supposed to be. 
+
 
 ## Additional Python Files in the Framework
 
-- `Prediction_pipeline.py`: Determines which data to use based on the selected model.
-- `Sima_output_converter.py`: Converts raw SIMA `.hdf5` outputs into `.csv` files.
-- `MLSTM_batching.py`: Batches data for prediction; triggers prediction on condition.
-- `MLSTM_predictor.py`: Triggers the `run_DOLPHINN()` function and generates plots.
-- `Prediction_functions.py`: Helper functions for saving and plotting prediction results.
-- `Prediction_results.py` / `Prediction_results_Option2.py`: Compare predictions with actual results and generate performance plots.
+- `Prediction_pipeline.py`: This file determines what data from the SIMA workflow simulation to use. The framework extracts data and this file determine what parts of the data to use for prediction, based on the `MLSTM_MODEL_NAME` chosen. It then loads the trained models `config.yaml` file, determining which data source to be utilized, depending on which dataset the trained model used for training; `Option1`, `Option2_Floater`, `Option2_SOV` or `Option3`.
+- `Sima_output_converter.py`: This file is responsible for reading the raw `HDF5` output file from the SIMA workflow simulation, converting the relevant data determined by `Prediction_pipeline.py` into `.csv` files. It separates wave elevations and motions/velocities or calculates gangway motions based on the desired data source. These files are further on used as input for the prediction.
+- `MLSTM_batching.py`: This file defines the PredictonClass, which collects simulation data from `Sima_output_converter.py` and builds batches of measured data used for prediction. The desired batch size is determined within this file, with `self.batch_size = 1000` for example. When `len(self.batch_data) >= batch_size` and `current_time \% pred_freq == 0` the prediction is triggered.
+- `MLSTM_predictor.py`: Ones a full batch is ready from `MLSTM_batching.py`, this file is triggered. Everytime a new prediction is due, the `run_DOLPHINN()` function gets triggered, and this script are responsible for making the single `Prediction_state` plot ready to be visualized and making `.csv` of prediction data ready for saving within the `Prediction_functions.py`.
+- `Prediction_functions.py`: This file provides functions which supports the DOLPHINN system, mostly for saving prediction results into `.csvs` and visualizing live predictions for the chosen `Prediction_state`. 
+- `Prediction_results.py` / `Prediction_results_Option2.py`: These files are responsible for comparing and visualizing the prediction results against the measured data from the SIMA workflow simulation. These files load the stored prediction history and measurements `.csvs` and calculate or generate gangway plots directly, depending on the `MLSTM_MODEL_NAME` and option chosen for training. Gangway thresholds are highlighted to obtain comparable results.
 
 ---
 
@@ -125,7 +146,7 @@ Descriptions:
 ### Step by step guide to utilize the framework
 
 1. Training of the MLSM model:
-    Open `wave.yaml` within "dol_input" folder. In this file the user has the ability to set the desired states desired for training, along with their units and desired training parameters. The framework relies on training datasets, following the desired `training_dataset` within `wave.yaml`. This dataset needs to include `Option1, 2 or 3`. If `Option2` is used for trainig, the path need to include either `Floater` or `SOV` to work. This statements are determined within `Prediction_pipeline.py`, and dynamically makes the framewrok understand what it shall predict for. By adjusting `Prediction_pipeline.py`, and additional files, this dynamic interaction can be changed. 
+    Open `wave.yaml` within "dol_input" folder. In this file the user has the ability to set the desired states wanted for training, along with their units and desired training parameters. The framework relies on training datasets, following the desired `training_dataset` path within `wave.yaml`. This dataset needs to include `Option1, 2 or 3`. If `Option2` is used for trainig, the path need to include either `Floater` or `SOV` as well to work. These statements are determined within `Prediction_pipeline.py`, and dynamically makes the framework understand what it shall predict for. By adjusting `Prediction_pipeline.py`, and additional files, this dynamic interaction can be changed. 
     Open 01_wave_train.py in "examples" folder.`TEST = "Option3_LT_WD0"` refers to the name the saved trained model is saved as after training. This saved model can be located within "training_results", ""Option3_LT_WD0", "wave_Option1_LT_WD0.pdf".
     After training, the results are stored within "training_results" folder. The folder structure within this folder is dependent on what the "TEST" variable in `01_wave_train.py` is set as.
 
