@@ -8,20 +8,17 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def save_prediction_csv(t_pred, y_hat, pred_error_x, pred_error_y, prediction_history, FOWT_pred_state, save_time, required_measurements, data_source, MLSTM_MODEL_NAME, WavDir):
+Case_nr = 'CASE_EX'
+
+def save_prediction_csv(t_pred, y_hat, pred_error_x, pred_error_y, prediction_history, Prediction_state, save_time, required_measurements, data_source, MLSTM_MODEL_NAME, WavDir):
     print("Saving results to csv")
 
     # Round sim length for filename
     save_time_str = str(int(save_time))
     source_tag = data_source.capitalize()
 
-    # Define the directory to save the prediction results
-    # base_dir = os.path.dirname(__file__)
-    # prediction_results_dir = os.path.join(base_dir, "prediction_results")
-    # os.makedirs(prediction_results_dir, exist_ok=True)
-
     base_dir = os.path.dirname(__file__)
-    wavdir = WavDir #data_source.split("_")[-1] if "_" in data_source else "unknown"
+    wavdir = WavDir
 
     if "Option1" in MLSTM_MODEL_NAME:
         option_label = "Option1"
@@ -34,7 +31,6 @@ def save_prediction_csv(t_pred, y_hat, pred_error_x, pred_error_y, prediction_hi
     else:
         option_label = "Unknown"
 
-
     subfolder_name = f"{option_label}_WD{wavdir}"
 
     # Build full save path
@@ -44,7 +40,7 @@ def save_prediction_csv(t_pred, y_hat, pred_error_x, pred_error_y, prediction_hi
 
     # Dynamic filenames
     # prediction_results_path = os.path.join(prediction_results_dir, f"PREDICTION_{save_time_str}s_{source_tag}_ACTIVE.csv")
-    prediction_history_path = os.path.join(prediction_results_dir, f"PRED_HISTORY_{save_time_str}s_{source_tag}_WD{WavDir}.csv")
+    prediction_history_path = os.path.join(prediction_results_dir, f"PRED_HISTORY_{save_time_str}s_{source_tag}_WD{WavDir}_{Case_nr}.csv")
 
     # Define DOFs in degrees
     angle_dofs = [
@@ -69,12 +65,12 @@ def save_prediction_csv(t_pred, y_hat, pred_error_x, pred_error_y, prediction_hi
     #print(f"[INFO] Saved prediction results to: {prediction_results_path}")
     print(f"[INFO] Saved prediction history to: {prediction_history_path}")
 
-def active_pred_plot(t_pred, y_hat, pred_error_x, pred_error_y, data_frame_inputs, current_time, dol, time_data, t1_idx, t2, t1, fig, ax, FOWT_pred_state, save_final_plot=False):
+def active_pred_plot(t_pred, y_hat, pred_error_x, pred_error_y, data_frame_inputs, current_time, dol, time_data, t1_idx, t2, t1, fig, ax, Prediction_state, save_final_plot=False):
 
     # Initialize or update the plot elements
     if not hasattr(active_pred_plot, 'initialized'):
-        active_pred_plot.line_actual, = ax.plot([], [], color='blue', label=f'Measured {FOWT_pred_state} (SIMA)')
-        active_pred_plot.line_predicted, = ax.plot([], [], color='#3CB371', linestyle='-', label=f'Predicted {FOWT_pred_state}')
+        active_pred_plot.line_actual, = ax.plot([], [], color='blue', label=f'Measured {Prediction_state} (SIMA)')
+        active_pred_plot.line_predicted, = ax.plot([], [], color='#3CB371', linestyle='-', label=f'Predicted {Prediction_state}')
         active_pred_plot.line_history, = ax.plot([], [], color='#3CB371', linestyle="--", label='Prediction history')
         active_pred_plot.marker_actual = ax.scatter([], [], color='blue', alpha=0.5)
         active_pred_plot.marker_predicted = ax.scatter([], [], color='#3CB371', alpha=0.5)
@@ -94,13 +90,13 @@ def active_pred_plot(t_pred, y_hat, pred_error_x, pred_error_y, data_frame_input
     active_pred_plot.line_predicted.set_data([], [])
 
     # Set new data for current prediction
-    active_pred_plot.line_predicted.set_data(t_pred + t2 + pred_error_x, y_hat[f"{FOWT_pred_state}"] + pred_error_y)
-    if FOWT_pred_state in ["PtfmRDX_Floater", "PtfmRDY_Floater", "PtfmRDZ_Floater"]:
-        actual_values = data_frame_inputs[f"{FOWT_pred_state}"].iloc[:t1_idx]
-        last_actual_state = data_frame_inputs[f"{FOWT_pred_state}"].iloc[t1_idx - 1]
+    active_pred_plot.line_predicted.set_data(t_pred + t2 + pred_error_x, y_hat[f"{Prediction_state}"] + pred_error_y)
+    if Prediction_state in ["PtfmRDX_Floater", "PtfmRDY_Floater", "PtfmRDZ_Floater"]:
+        actual_values = data_frame_inputs[f"{Prediction_state}"].iloc[:t1_idx]
+        last_actual_state = data_frame_inputs[f"{Prediction_state}"].iloc[t1_idx - 1]
     else:
-        actual_values = data_frame_inputs[f"{FOWT_pred_state}"].iloc[:t1_idx]
-        last_actual_state = data_frame_inputs[f"{FOWT_pred_state}"].iloc[t1_idx - 1]
+        actual_values = data_frame_inputs[f"{Prediction_state}"].iloc[:t1_idx]
+        last_actual_state = data_frame_inputs[f"{Prediction_state}"].iloc[t1_idx - 1]
 
     active_pred_plot.line_actual.set_data(time_data.iloc[0:t1_idx] + t2, actual_values)
     active_pred_plot.marker_actual.set_offsets((time_data.iloc[t1_idx - 1] + t2, last_actual_state))
@@ -108,15 +104,15 @@ def active_pred_plot(t_pred, y_hat, pred_error_x, pred_error_y, data_frame_input
     
     # Update marker and text for actual data
     last_actual_time = time_data.iloc[t1_idx-1] + t2
-    last_actual_state = data_frame_inputs[f"{FOWT_pred_state}"].iloc[t1_idx-1] * 180/np.pi
+    last_actual_state = data_frame_inputs[f"{Prediction_state}"].iloc[t1_idx-1] * 180/np.pi
     active_pred_plot.marker_actual.set_offsets((last_actual_time, last_actual_state))
-    active_pred_plot.marker_actual.set_label(f'Current {FOWT_pred_state} ({current_time}s)')
+    active_pred_plot.marker_actual.set_label(f'Current {Prediction_state} ({current_time}s)')
 
     # Update marker and text for predicted data
     last_pred_time = t_pred.iloc[-1] + t2 + pred_error_x
-    last_pred_state = y_hat[f"{FOWT_pred_state}"].iloc[-1] + pred_error_y
+    last_pred_state = y_hat[f"{Prediction_state}"].iloc[-1] + pred_error_y
     active_pred_plot.marker_predicted.set_offsets((last_pred_time, last_pred_state))
-    active_pred_plot.marker_predicted.set_label(f'Predicted {FOWT_pred_state} ({current_time + dol.time_horizon + pred_error_x}s)')  
+    active_pred_plot.marker_predicted.set_label(f'Predicted {Prediction_state} ({current_time + dol.time_horizon + pred_error_x}s)')  
 
     # === UNIT-AWARE Y-LABELING ===
     deg_params = [
@@ -135,17 +131,17 @@ def active_pred_plot(t_pred, y_hat, pred_error_x, pred_error_y, data_frame_input
         "telescoping_vel"
     ]
 
-    if FOWT_pred_state in deg_params:
-        y_label = f"{FOWT_pred_state} [deg]"
-    elif FOWT_pred_state in deg_per_s_params:
-        y_label = f"{FOWT_pred_state} [deg/s]"
-    elif FOWT_pred_state in m_per_s_params:
-        y_label = f"{FOWT_pred_state} [m/s]"
+    if Prediction_state in deg_params:
+        y_label = f"{Prediction_state} [deg]"
+    elif Prediction_state in deg_per_s_params:
+        y_label = f"{Prediction_state} [deg/s]"
+    elif Prediction_state in m_per_s_params:
+        y_label = f"{Prediction_state} [m/s]"
     else:
-        y_label = f"{FOWT_pred_state} [m]"
+        y_label = f"{Prediction_state} [m]"
 
     # Combine actual and predicted values for range calculation
-    all_values = np.concatenate([actual_values.values, y_hat[f"{FOWT_pred_state}"].values + pred_error_y])
+    all_values = np.concatenate([actual_values.values, y_hat[f"{Prediction_state}"].values + pred_error_y])
 
     # Compute min and max with margin
     y_min = np.min(all_values)
@@ -161,7 +157,7 @@ def active_pred_plot(t_pred, y_hat, pred_error_x, pred_error_y, data_frame_input
     handles, labels = ax.get_legend_handles_labels()
     ax.legend(handles, labels)
     plt.grid(True)
-    plt.title(f'{FOWT_pred_state} Prediction. Wave Time Horizon: {dol.time_horizon}s')
+    plt.title(f'{Prediction_state} Prediction. Wave Time Horizon: {dol.time_horizon}s')
     plt.draw()
     plt.pause(0.1)
 
@@ -170,7 +166,7 @@ def active_pred_plot(t_pred, y_hat, pred_error_x, pred_error_y, data_frame_input
         figures_dir = os.path.join(base_dir, "prediction_results")
         os.makedirs(figures_dir, exist_ok=True)
 
-        file_name = f"{FOWT_pred_state}_final_prediction.png"
+        file_name = f"{Prediction_state}_final_prediction.png"
         file_path = os.path.join(figures_dir, file_name)
 
         plt.savefig(file_path, dpi=300, bbox_inches='tight')

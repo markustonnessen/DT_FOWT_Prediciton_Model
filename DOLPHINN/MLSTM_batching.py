@@ -19,7 +19,7 @@ class PredictionClass():
         self.iteration_count = 0                 # Initialize the iteration count outside the loop
         self.full_measurements = []              # To store all measurements for all timesteps
 
-    def run_simulation(self, current_time, measurements, plot_figure, time_horizon, pred_error_x, pred_error_y, pred_freq, save_csv, save_csv_time, FUTURE_WAVE_FILE, FOWT_pred_state, MLSTM_MODEL_NAME, DOLPHINN_PATH, sim_length, required_measurements, data_source, WavDir):
+    def run_simulation(self, current_time, measurements, plot_figure, time_horizon, pred_error_x, pred_error_y, pred_freq, save_csv, save_csv_time, FUTURE_WAVE_FILE, Prediction_state, MLSTM_MODEL_NAME, DOLPHINN_PATH, sim_length, required_measurements, data_source, WavDir):
     
         from DOLPHINN.MLSTM_predictor import run_DOLPHINN
 
@@ -73,12 +73,7 @@ class PredictionClass():
         if len(self.batch_data) >= self.batch_size and current_time % pred_freq == 0:
             data_frame_inputs = pd.DataFrame(self.batch_data, columns=['Time', 'wave'] + required_measurements)
             print("Running MLSTM with input data frame shape:", data_frame_inputs.shape)
-            #self.t_pred, self.y_hat = run_DOLPHINN(data_frame_inputs, DOLPHINN_PATH, plot_figure, current_time, pred_error_x, pred_error_y, save_csv, save_csv_time, FOWT_pred_state, sim_length, required_measurements)
-            self.t_pred, self.y_hat = run_DOLPHINN(
-            data_frame_inputs, DOLPHINN_PATH, plot_figure, current_time,
-            pred_error_x, pred_error_y, save_csv, save_csv_time,
-            FOWT_pred_state, sim_length, required_measurements, data_source, MLSTM_MODEL_NAME, WavDir
-            )
+            self.t_pred, self.y_hat = run_DOLPHINN(data_frame_inputs, DOLPHINN_PATH, plot_figure, current_time,pred_error_x, pred_error_y, save_csv, save_csv_time,Prediction_state, sim_length, required_measurements, data_source, MLSTM_MODEL_NAME, WavDir)
             if save_csv and not self.csv_saved and current_time >= save_csv_time:
                 self.csv_saved = True
 

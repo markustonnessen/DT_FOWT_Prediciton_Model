@@ -5,11 +5,9 @@ import matplotlib.pyplot as plt
 import time
 import numpy as np
 import re
-from sklearn.metrics import mean_squared_error
-from matplotlib.font_manager import FontProperties
 from matplotlib.lines import Line2D
 
-# === HANDLE ARGUMENTS ===
+
 if len(sys.argv) == 3:
     measurement_filename = sys.argv[1]
     pred_history_filename = sys.argv[2]
@@ -27,15 +25,13 @@ DOF_OFFSETS = {
     "slewing_vel": 0.0
 }
 
-# === FUNCTION TO PARSE FOLDER FROM FILENAMES ===
 def parse_subfolder_from_filename(filename):
     match_opt = re.search(r"_(Option\d+(?:_[A-Za-z]+)?)_", filename)
-    match_wd = re.search(r"_WD(-?\d+)", filename)  # Updated to allow negative numbers
+    match_wd = re.search(r"_WD(-?\d+)", filename) 
     option = match_opt.group(1) if match_opt else "Unknown"
     wavdir = match_wd.group(1) if match_wd else "0"
     return f"{option}_WD{wavdir}"
 
-# === PARSE FOLDER NAME ===
 subfolder = parse_subfolder_from_filename(pred_history_filename)
 print(f"[INFO] Detected subfolder: {subfolder}")
 
@@ -44,7 +40,6 @@ try:
 except (IndexError, ValueError):
     WavDir = 0
 
-# === SET FILE PATHS ===
 prediction_dir = os.path.join(os.path.dirname(__file__), "prediction_results", subfolder)
 
 measurement_file = os.path.join(prediction_dir, measurement_filename)
@@ -53,7 +48,6 @@ pred_history_file = os.path.join(prediction_dir, pred_history_filename)
 print(f"       Measurements: {os.path.basename(measurement_file)}")
 print(f"       Predictions : {os.path.basename(pred_history_file)}")
 
-# === WAIT FOR FILES TO EXIST (with retries) ===
 for file_path in [measurement_file, pred_history_file]:
     for attempt in range(5):
         if os.path.exists(file_path):
@@ -107,7 +101,6 @@ required_dofs = [
 
 can_compute_gangway = all(col in df_pred.columns for col in required_dofs)
 
-# === UNIT LABELS ===
 param_units = {
     "slewing": " [deg]",
     "luffing": " [deg]",
@@ -129,7 +122,6 @@ param_units = {
     "slewing_vel": " [deg/s]"
 }
 
-# Define thresholds per parameter for both transfer and stay connected limits
 thresholds = {
     "telescoping":       {"transfer": 4.0, "stay": 4.5, "unit": "[m]"},
     "luffing":           {"transfer": 10.0, "stay": 15.0, "unit": "[deg]"},
@@ -141,16 +133,13 @@ thresholds = {
 
 
 def plot_with_threshold_coloring(ax, time, series, thresholds, base_color, label_prefix, param_name):
-    """Plot series with dynamic color change based on threshold exceedances."""
     t = thresholds["transfer"]
     s = thresholds["stay"]
 
-    # Create masks
     normal = ~((series > t) | (series < -t))
     pt_exceed = ((series > t) | (series < -t)) & ~((series > s) | (series < -s))
     sc_exceed = (series > s) | (series < -s)
 
-    # Helper to plot masked segments
     def plot_segment(mask, color, label=None):
         if not mask.any():
             return
@@ -160,7 +149,6 @@ def plot_with_threshold_coloring(ax, time, series, thresholds, base_color, label
             ax.plot(time.iloc[seg], series.iloc[seg], color=color, label=label)
             label = None
 
-    # Plot each zone
     plot_segment(normal, base_color, f"{label_prefix} {param_name}")
     plot_segment(pt_exceed, "orange")
     plot_segment(sc_exceed, "red")
@@ -168,7 +156,6 @@ def plot_with_threshold_coloring(ax, time, series, thresholds, base_color, label
 
 # === PLOT PREDICTED STATES ===
 if sim_type == "Option3":
-    # Plot 6DOFs directly as gangway states (assumed to be predicted)
     gangway_dofs = ["telescoping", "luffing", "slewing", "telescoping_vel", "luffing_vel", "slewing_vel"]
     fig, axs = plt.subplots(6, 1, figsize=(12, 18), sharex=True)
     xlim_min, xlim_max = df_pred["Time"].iloc[0], df_pred["Time"].iloc[-1]
@@ -189,17 +176,14 @@ if sim_type == "Option3":
             t = thresholds[param]["transfer"]
             s = thresholds[param]["stay"]
 
-            # Threshold lines
             axs[i].axhline(t, color="orange", linestyle="--", label=f"Personnel Transfer ±{t}")
             axs[i].axhline(-t, color="orange", linestyle="--")
             axs[i].axhline(s, color="red", linestyle="--", label=f"Stay Connected ±{s}")
             axs[i].axhline(-s, color="red", linestyle="--")
 
-            # Predicted exceedances
             idx_pt_pred = (y_pred < -t) | (y_pred > t)
             idx_sc_pred = (y_pred < -s) | (y_pred > s)
 
-            # Measured exceedances
             idx_pt_meas = (y_meas < -t) | (y_meas > t)
             idx_sc_meas = (y_meas < -s) | (y_meas > s)
 
@@ -218,18 +202,16 @@ if sim_type == "Option3":
         axs[i].set_ylabel(f"{param}{param_units.get(param, '')}")
         axs[i].grid(True)
         axs[i].set_xlim(xlim_min, xlim_max)
-        # axs[i].legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
 
     axs[-1].set_xlabel("Time [s]")
-    fig.subplots_adjust(right=0.82)
     fig.suptitle(f"Predicted Gangway Motions and Velocities {option_label}", fontsize=15)
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
     plot_path1 = os.path.join(prediction_dir, f"GangwayComparison_{option_label}_{save_time_str}s_WD_{WavDir}deg.pdf")
     fig.savefig(plot_path1, dpi=300)
     plt.show()
     print(f"[INFO] Saved DOF comparison plot to: {plot_path1}")
 
 else:
-    # Default behavior for SOV, Floater, Option1 — system states without thresholds
     fig, axs = plt.subplots(len(shared_params), 1, figsize=(12, 3 * len(shared_params)), sharex=True)
     axs = axs if isinstance(axs, np.ndarray) else [axs]
     xlim_min, xlim_max = df_pred["Time"].iloc[0], df_pred["Time"].iloc[-1]
@@ -249,13 +231,11 @@ else:
     axs[-1].set_xlabel("Time [s]")
     fig.suptitle(f"{option_label} Prediction vs. Measurements SIMA", fontsize=15)
 
-    # Save the DOF comparison plot
     fig.tight_layout(rect=[0, 0, 1, 0.96])
     plot_path1 = os.path.join(prediction_dir, f"{option_label}_DOFs_vs_Measurement_{save_time_str}s_WD{WavDir}deg.pdf")
     fig.savefig(plot_path1, dpi=300)
     print(f"[INFO] Saved DOF comparison plot to: {plot_path1}")
     plt.show()
-
 
 
 # =========================================== COMPUTE AND PLOT GANGWAY MOTIONS IF POSSIBLE ================================================
@@ -308,7 +288,6 @@ if can_compute_gangway:
         warn_sc = "Exceed" if ((series < -stay) | (series > stay)).any() else "No Warning"
         return warn_pt, warn_sc
 
-    # Compute for predictions
     tel_v_pred, luf_v_pred, sle_v_pred = compute_velocity_components(df_pred, prefix="Predicted_")
 
     df_gangway_pred["telescoping_vel"] = tel_v_pred
@@ -330,7 +309,6 @@ if can_compute_gangway:
             "slewing": sle_meas
         })
 
-        # ===  Trim measured gangway to prediction time window
         meas_time_start = df_gangway_pred["Time"].iloc[0]
         meas_time_end = df_gangway_pred["Time"].iloc[-1]
         df_gangway_meas = df_gangway_meas[
@@ -340,7 +318,6 @@ if can_compute_gangway:
 
         has_measured = True
 
-        # Add velocity columns to df_gangway_meas
         mask = (df_meas["Time"] >= meas_time_start) & (df_meas["Time"] <= meas_time_end)
         df_meas_trimmed = df_meas[mask].reset_index(drop=True)
         tel_v_meas, luf_v_meas, sle_v_meas = compute_velocity_components(df_meas_trimmed, prefix="")
@@ -390,8 +367,7 @@ if can_compute_gangway:
             handles += [Line2D([], [], color='none', label=pt_label),
                         Line2D([], [], color='none', label=sc_label)]
             axs2[i].legend(handles=handles, loc='center left', bbox_to_anchor=(1.0, 0.5))
-                
-        #axs2[i].legend(loc='center left', bbox_to_anchor=(1.0, 0.5))           
+                         
         axs2[i].set_ylabel(f"{motion}{param_units.get(motion, '')}")
         axs2[i].grid(True)
         axs2[i].set_xlim(xlim_min, xlim_max)

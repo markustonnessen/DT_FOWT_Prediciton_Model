@@ -58,7 +58,6 @@ def extract_and_save_csv(h5_input_arg, timestep):
     YLang_vel_Floater = np.deg2rad(hf[f'{path_velo_floater}/YLang_vel_Totalmotion'][3000:])
     ZLang_vel_Floater = np.deg2rad(hf[f'{path_velo_floater}/ZLang_vel_Totalmotion'][3000:])
 
-    # === TIME ===
     num_steps = len(wave_Floater)
     time_array = [i * timestep for i in range(num_steps)]
     sim_length = time_array[-1]
@@ -84,12 +83,6 @@ def extract_and_save_csv(h5_input_arg, timestep):
     
 
     def transform_velocity(v_A, omega, r_BA):
-        """
-        Transform velocity from a reference point (A) to another point (B) on a rigid body.
-        v_A: linear velocity at reference point A (array-like, shape (3,))
-        omega: angular velocity vector (array-like, shape (3,))
-        r_BA: position vector from A to B (array-like, shape (3,1))
-        """
         omega_cross_r = np.cross(omega, r_BA.flatten())
         return v_A + omega_cross_r
 
@@ -114,7 +107,6 @@ def extract_and_save_csv(h5_input_arg, timestep):
     updated_gangway_df = pd.DataFrame(updated_gangway_positions, columns=['X_gangway', 'Y_gangway', 'Z_gangway'])
     updated_hookup_df = pd.DataFrame(updated_hookup_positions, columns=['X_hookup', 'Y_hookup', 'Z_hookup'])
 
-    # === BACK TO DEGREES ===
     PtfmRDX_Floater = np.rad2deg(PtfmRDX_Floater)
     PtfmRDY_Floater = np.rad2deg(PtfmRDY_Floater)
     PtfmRDZ_Floater = np.rad2deg(PtfmRDZ_Floater)
@@ -123,7 +115,6 @@ def extract_and_save_csv(h5_input_arg, timestep):
     PtfmRDY_SOV = np.rad2deg(PtfmRDY_SOV)
     PtfmRDZ_SOV = np.rad2deg(PtfmRDZ_SOV)
 
-    # === FINAL DATAFRAME ===
     df_wave_Floater = pd.DataFrame({
         'Time': time_array,
         'wave': wave_Floater
@@ -155,7 +146,6 @@ def extract_and_save_csv(h5_input_arg, timestep):
         'PtfmRDZ_SOV': PtfmRDZ_SOV
     })
 
-    # === SAVE CSV ===
     script_dir = os.path.abspath(os.path.dirname(__file__))
     incoming_path = os.path.join(script_dir, "Incoming_Waves")
     os.makedirs(incoming_path, exist_ok=True)
@@ -177,8 +167,6 @@ def extract_and_save_csv(h5_input_arg, timestep):
     print(f"[INFO] Saved SOV wave CSV to {wave_file_path_SOV}")
     print(f"[INFO] Saved SOV motion CSV to {motion_file_path_SOV}")
 
-
-    # === COMPUTE GANGWAY MOTIONS ===
     distances = np.sqrt(
         (df_motion_SOV['PtfmTDX_SOV'] - df_motion_Floater['PtfmTDX_Floater'])**2 +
         (df_motion_SOV['PtfmTDY_SOV'] - df_motion_Floater['PtfmTDY_Floater'])**2 +
@@ -186,10 +174,7 @@ def extract_and_save_csv(h5_input_arg, timestep):
     )
 
     telescoping = distances - distances.iloc[0]
-
     luffing = np.degrees(np.arcsin((df_motion_Floater['PtfmTDZ_Floater'] - df_motion_SOV['PtfmTDZ_SOV'])/distances))
-     
-
     delta_x = df_motion_Floater['PtfmTDX_Floater'] - df_motion_SOV['PtfmTDX_SOV']
     delta_y = df_motion_Floater['PtfmTDY_Floater'] - df_motion_SOV['PtfmTDY_SOV']
     slewing_angle = np.degrees(np.arctan2(delta_x, delta_y))
@@ -204,19 +189,16 @@ def extract_and_save_csv(h5_input_arg, timestep):
         'slewing': slewing
     })
 
-    # === GANGWAY VELOCITY TRANSFORMATIONS ===
     V_gangway_global = []
     V_hookup_global = []
 
     for i in range(num_steps):
-        # --- SOV Gangway ---
         v_A_sov = np.array([XLvelocity_SOV[i], YLvelocity_SOV[i], ZLvelocity_SOV[i]])
         omega_sov = np.array([XLang_vel_SOV[i], YLang_vel_SOV[i], ZLang_vel_SOV[i]])
         v_local = transform_velocity(v_A_sov, omega_sov, gangway_position)
         R_sov = euler_to_rotation_matrix(np.deg2rad(PtfmRDX_SOV[i]), np.deg2rad(PtfmRDY_SOV[i]), np.deg2rad(PtfmRDZ_SOV[i]))
         V_gangway_global.append(R_sov @ v_local)
 
-        # --- Floater Hookup ---
         v_A_floater = np.array([XLvelocity_Floater[i], YLvelocity_Floater[i], ZLvelocity_Floater[i]])
         omega_floater = np.array([XLang_vel_Floater[i], YLang_vel_Floater[i], ZLang_vel_Floater[i]])
         v_local = transform_velocity(v_A_floater, omega_floater, hookup_position)
@@ -227,12 +209,9 @@ def extract_and_save_csv(h5_input_arg, timestep):
     V_hookup_global = np.array(V_hookup_global)
     V_rel = V_gangway_global - V_hookup_global
 
-    # === ADD VELOCITY COLUMNS TO FLOATER AND SOV DATAFRAMES ===
-    # Linear velocities (transformed to global frame)
     df_motion_Floater[['Vx_Floater_local', 'Vy_Floater_local', 'Vz_Floater_local']] = V_hookup_global
     df_motion_SOV[['Vx_SOV_local', 'Vy_SOV_local', 'Vz_SOV_local']] = V_gangway_global
 
-    # Angular velocities (originally in local frame, converted to deg/s)
     df_motion_Floater[['Wx_Floater', 'Wy_Floater', 'Wz_Floater']] = np.rad2deg(
         np.column_stack([XLang_vel_Floater, YLang_vel_Floater, ZLang_vel_Floater])
     )
@@ -240,7 +219,6 @@ def extract_and_save_csv(h5_input_arg, timestep):
         np.column_stack([XLang_vel_SOV, YLang_vel_SOV, ZLang_vel_SOV])
     )
 
-    # === RELATIVE MOTION VECTOR ===
     dx = df_motion_SOV['PtfmTDX_SOV'] - df_motion_Floater['PtfmTDX_Floater']
     dy = df_motion_SOV['PtfmTDY_SOV'] - df_motion_Floater['PtfmTDY_Floater']
     dz = df_motion_SOV['PtfmTDZ_SOV'] - df_motion_Floater['PtfmTDZ_Floater']
@@ -256,10 +234,9 @@ def extract_and_save_csv(h5_input_arg, timestep):
     df_motion_Gangway["slewing_vel"] = slewing_vel
 
 
-    # === SAVE GANGWAY WAVE CSV ===
     df_wave_Gangway = pd.DataFrame({
         'Time': time_array,
-        'wave': wave_Floater  # we use Floater wave signal for gangway
+        'wave': wave_Floater
     })
 
     wave_file_path_Gangway = os.path.join(incoming_path, f"{math.ceil(sim_length)}s_wave_Option3.csv")
@@ -281,12 +258,9 @@ def extract_and_save_csv(h5_input_arg, timestep):
     df_motion_Option1.to_csv(motion_file_path_Option1, index=False)
     print(f"[INFO] Saved Option1 motion CSV to {motion_file_path_Option1}")
 
-    # === FINAL SAVE after velocity columns are added ===
     df_motion_Floater.to_csv(motion_file_path_Floater, index=False)
     df_motion_SOV.to_csv(motion_file_path_SOV, index=False)
 
-
-    # === Save Option1 wave CSV (using Floater wave signal for now) ===
     wave_file_path_Option1 = os.path.join(incoming_path, f"{math.ceil(sim_length)}s_wave_Option1.csv")
     df_wave_Floater.to_csv(wave_file_path_Option1, index=False)
     print(f"[INFO] Saved Option1 wave CSV to {wave_file_path_Option1}")

@@ -7,21 +7,32 @@ from matplotlib.lines import Line2D
 # === CONFIGURATION ===
 base_dir = os.path.join(os.path.dirname(__file__), "prediction_results")
 time_str = "590s"
+time_str2 = '590.0'
 WavDir = 0
 option_label = 'Option2'
 
+# === APPLY OFFSETS TO PARAMETERS ===
+APPLY_OFFSETS = True 
+DOF_OFFSETS = {
+    "telescoping": 5.0,
+    "luffing": 0.0,
+    "slewing": 0.0,
+    "telescoping_vel": 0.0,
+    "luffing_vel": 0.0,
+    "slewing_vel": 0.0
+}
+
+# === FILE PATHS ===
 prediction_dir = os.path.join(base_dir, "..", "prediction_results")
 prediction_dir_Floater = os.path.join(base_dir, "..", "prediction_results", f"{option_label}_Floater_WD{WavDir}")
 prediction_dir_SOV = os.path.join(base_dir, "..", "prediction_results", f"{option_label}_SOV_WD{WavDir}")
 
-# === FILE PATHS ===
-meas_sov_file = os.path.join(prediction_dir_SOV, f"measurements_590.0_Option2_sov_WD{WavDir}.csv")
-meas_floater_file = os.path.join(prediction_dir_Floater, f"measurements_590.0_Option2_floater_WD{WavDir}.csv")
+meas_sov_file = os.path.join(prediction_dir_SOV, f"measurements_{time_str2}_Option2_sov_WD{WavDir}.csv")
+meas_floater_file = os.path.join(prediction_dir_Floater, f"measurements_{time_str2}_Option2_floater_WD{WavDir}.csv")
 
 pred_sov_file = os.path.join(prediction_dir_SOV, f"PRED_HISTORY_{time_str}_Option2_sov_WD{WavDir}.csv")
 pred_floater_file = os.path.join(prediction_dir_Floater, f"PRED_HISTORY_{time_str}_Option2_floater_WD{WavDir}.csv")
 
-# Create subfolder for plots based on Option and WavDir
 plot_subfolder = os.path.join(prediction_dir, f"{option_label}_WD{WavDir}")
 os.makedirs(plot_subfolder, exist_ok=True)
 
@@ -124,48 +135,55 @@ df_pred = pd.DataFrame({
 t_min = max(df_meas["Time"].min(), df_pred["Time"].min())
 t_max = min(df_meas["Time"].max(), df_pred["Time"].max())
 
-def trim(df): return df[(df["Time"] >= t_min) & (df["Time"] <= t_max)].reset_index(drop=True)
-df_meas, df_pred = trim(df_meas), trim(df_pred)
-
+df_meas = df_meas[(df_meas["Time"] >= t_min) & (df_meas["Time"] <= t_max)].reset_index(drop=True)
+df_pred = df_pred[(df_pred["Time"] >= t_min) & (df_pred["Time"] <= t_max)].reset_index(drop=True)
 
 # === PLOTTING ===
 fig, axs = plt.subplots(6, 1, figsize=(12, 18), sharex=True)
-xlim_min, xlim_max = df_pred["Time"].iloc[0], 600 #df_pred["Time"].iloc[-1]
+xlim_min, xlim_max = df_pred["Time"].iloc[0], 600
 params = ["telescoping", "luffing", "slewing", "telescoping_vel", "luffing_vel", "slewing_vel"]
 
 for i, param in enumerate(params):
     ax = axs[i]
     plot_with_threshold_coloring(ax, df_meas["Time"], df_meas[param], thresholds[param], "blue", "Measured", param)
-    plot_with_threshold_coloring(ax, df_pred["Time"], df_pred[param], thresholds[param], "green", "Predicted", param)
+
+    pred_series = df_pred[param] + DOF_OFFSETS.get(param, 0.0) if APPLY_OFFSETS else df_pred[param]
+    plot_with_threshold_coloring(ax, df_pred["Time"], pred_series, thresholds[param], "green", "Predicted", param)
 
     t = thresholds[param]["transfer"]
     s = thresholds[param]["stay"]
     ax.axhline(t, color="orange", linestyle="--", label=f"Personnel Transfer ±{t}")
     ax.axhline(-t, color="orange", linestyle="--")
-    ax.axhline(s, color="red", linestyle=":", label=f"Stay Connected ±{s}")
-    ax.axhline(-s, color="red", linestyle=":")
+    ax.axhline(s, color="red", linestyle="--", label=f"Stay Connected ±{s}")
+    ax.axhline(-s, color="red", linestyle="--")
 
-    pt_warning = ((df_pred[param] < -t) | (df_pred[param] > t)).any() or ((df_meas[param] < -t) | (df_meas[param] > t)).any()
-    sc_warning = ((df_pred[param] < -s) | (df_pred[param] > s)).any() or ((df_meas[param] < -s) | (df_meas[param] > s)).any()
+    pt_warning = ((pred_series < -t) | (pred_series > t)).any() or ((df_meas[param] < -t) | (df_meas[param] > t)).any()
+    sc_warning = ((pred_series < -s) | (pred_series > s)).any() or ((df_meas[param] < -s) | (df_meas[param] > s)).any()
     pt_label = "PT: WARNING" if pt_warning else "PT: No Warning"
     sc_label = "SC: WARNING" if sc_warning else "SC: No Warning"
 
     handles, labels = ax.get_legend_handles_labels()
     handles += [Line2D([], [], color='none', label=pt_label), Line2D([], [], color='none', label=sc_label)]
     ax.legend(handles=handles, loc='center left', bbox_to_anchor=(1.0, 0.5))
+
     ax.set_ylabel(f"{param} {thresholds[param]['unit']}")
     ax.grid(True)
     ax.set_xlim(xlim_min, xlim_max)
 
 axs[-1].set_xlabel("Time [s]")
 fig.subplots_adjust(right=0.82)
-fig.suptitle("Predicted Gangway Motions and Velocities Option2", fontsize=15)
+fig.suptitle(f"Predicted Gangway Motions and Velocities {option_label}", fontsize=15)
 plt.tight_layout(rect=[0, 0, 1, 0.96])
 
+if APPLY_OFFSETS:
+    for param in DOF_OFFSETS:
+        if param in df_pred.columns:
+            df_pred[param] += DOF_OFFSETS[param]
+
 # === SAVE ===
-plot_path = os.path.join(plot_subfolder, f"GangwayComparison_Option2_{time_str}_WD{WavDir}deg.png")
-df_meas.to_csv(os.path.join(plot_subfolder, f"MeasuredGangwayMotionsAndVelocities_Option2_{time_str}_WD{WavDir}deg.csv"), index=False)
-df_pred.to_csv(os.path.join(plot_subfolder, f"PredictedGangwayMotionsAndVelocities_Option2_{time_str}_WD{WavDir}deg.csv"), index=False)
+plot_path = os.path.join(plot_subfolder, f"GangwayComparison_Option2_{time_str}_WD_{WavDir}deg.pdf")
+df_meas.to_csv(os.path.join(plot_subfolder, f"MeasuredGangwayMotionsAndVelocities_Option2_{time_str}_WD_{WavDir}deg.csv"), index=False)
+df_pred.to_csv(os.path.join(plot_subfolder, f"PredictedGangwayMotionsAndVelocities_Option2_{time_str}_WD_{WavDir}deg.csv"), index=False)
 
 plt.savefig(plot_path, dpi=300)
 plt.show()

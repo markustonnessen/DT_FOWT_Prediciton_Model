@@ -59,12 +59,11 @@ pred_error_y = globals().get("pred_error_x", 0.0)
 pred_freq = globals().get("pred_freq", 5.0)
 save_csv = globals().get("save_csv", True)
 save_csv_time = globals().get("save_csv_time", 400)
-FOWT_pred_state = globals().get("FOWT_pred_state", "PtfmTDX_Floater")
+Prediction_state = globals().get("Prediction_state", "PtfmTDX_Floater")
 early_stop_enabled = globals().get("early_stop_enabled", False)
 early_stop_time = globals().get("early_stop_time", 600)
-WavDir = globals().get("WavDir", 0)  # Default to 0 if not set
+WavDir = globals().get("WavDir", 0)
 
-# Dynamically load DOFs used for training from YAML
 required_measurements, data_source = get_model_config(MLSTM_MODEL_NAME)
 print(f"[INFO] Using DOFs from config.yaml: {required_measurements}")
 print(f"[INFO] Detected data source from training_dataset path: {data_source}")
@@ -140,7 +139,7 @@ for _, row in df_motion.iterrows():
         save_csv=save_csv,
         save_csv_time=save_csv_time,
         FUTURE_WAVE_FILE=wave_file_path,
-        FOWT_pred_state=FOWT_pred_state,
+        Prediction_state=Prediction_state,
         MLSTM_MODEL_NAME=MLSTM_MODEL_NAME,
         DOLPHINN_PATH=DOLPHINN_PATH,
         sim_length=sim_length,
@@ -152,10 +151,9 @@ for _, row in df_motion.iterrows():
 print("\n[INFO] Done! Predictions have been generated.\n")
 
 # ------------------- AFTER PREDICTIONS ------------------------
-# Determine filenames based on known save time and data source
 sim_type = data_source.capitalize()
-save_time_str_decimal = f"{save_csv_time:.1f}"   # "590.0"
-save_time_str_int = str(int(save_csv_time))      # "590"
+save_time_str_decimal = f"{save_csv_time:.1f}"
+save_time_str_int = str(int(save_csv_time)) 
 
 measurement_file = f"measurements_{save_time_str_decimal}_{sim_type}_WD{WavDir}.csv"
 pred_history_file = f"PRED_HISTORY_{save_time_str_int}s_{sim_type}_WD{WavDir}.csv"
@@ -163,7 +161,7 @@ pred_history_file = f"PRED_HISTORY_{save_time_str_int}s_{sim_type}_WD{WavDir}.cs
 plot_script_path = os.path.join(os.path.dirname(__file__), "Prediction_results.py")
 if os.path.exists(plot_script_path):
     print("[INFO] Launching plot script for latest prediction results...")
-    time.sleep(1)  # Optional: wait 1 second, only if needed
+    time.sleep(1) 
     subprocess.call(["python", plot_script_path, measurement_file, pred_history_file])
 else:
     print("[WARNING] Plot script not found at:", plot_script_path)
