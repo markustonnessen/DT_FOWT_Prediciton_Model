@@ -120,3 +120,18 @@ Descriptions:
 | XLang_vel_SOV         | XLang_vel_Totalmotion      | Roll Angular Velocity    |
 | YLang_vel_SOV         | YLang_vel_Totalmotion      | Pitch Angular Velocity   |
 | ZLang_vel_SOV         | ZLang_vel_Totalmotion      | Yaw Angular Velocity     |
+
+
+### Step by step guide to utilize the framework
+
+1. Training of the MLSM model:
+    Open `wave.yaml` within "dol_input" folder. In this file the user has the ability to set the desired states desired for training, along with their units and desired training parameters. The framework relies on training datasets, following the desired `training_dataset` within `wave.yaml`. This dataset needs to include `Option1, 2 or 3`. If `Option2` is used for trainig, the path need to include either `Floater` or `SOV` to work. This statements are determined within `Prediction_pipeline.py`, and dynamically makes the framewrok understand what it shall predict for. By adjusting `Prediction_pipeline.py`, and additional files, this dynamic interaction can be changed. 
+    Open 01_wave_train.py in "examples" folder.`TEST = "Option3_LT_WD0"` refers to the name the saved trained model is saved as after training. This saved model can be located within "training_results", ""Option3_LT_WD0", "wave_Option1_LT_WD0.pdf".
+    After training, the results are stored within "training_results" folder. The folder structure within this folder is dependent on what the "TEST" variable in `01_wave_train.py` is set as.
+
+2. Ensure SIMA is downloaded and a valid license is available.
+    In order for this framework to run, an Workflow model needs to be developed within SIMA, running the desired model (.stask). Within this workflow, a external program block needs to be implemented and be pointed to relevant file paths to execte Python.
+
+3. Prediction:
+    Open `Launch_DT_framework`. Within this file multiple parameters can be adjusted for the SIMA simulation, and all relevant file paths needs to be updated as mentioned over.
+    The `MLSTM_MODEL_NAME = "Option3_LT_WD0"` needs to be set to a valid trained model folder name. The `Prediction_state = "PtfmTDZ_SOV"` needs to be set to a valid state used on training, from `wave.yaml`.
