@@ -1,4 +1,4 @@
-MLSTM_MODEL_NAME='Option3_with_velo'
+MLSTM_MODEL_NAME='Option2_LT_WD0_SOV'
 timestep=0.25
 plot_figure=True
 time_horizon=20.0
@@ -7,6 +7,7 @@ pred_error_y=0.0
 pred_freq=5.0
 save_csv=True
 save_csv_time=590
-FOWT_pred_state='telescoping'
+Prediction_state='PtfmTDZ_SOV'
 early_stop_enabled=True
 early_stop_time=600
+WavDir=0

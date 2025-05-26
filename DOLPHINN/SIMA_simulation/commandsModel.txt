@@ -1,3 +1,3 @@
 import file="C:\Users\marku\Documents\DT_prediction_model\DOLPHINN\SIMA_simulation\model_without_line.stask"
-run task=Workflow1 workflow=Dynamic input=Heading=180;Xref=25.875;Yref=-62.817;Hs=4;Tp=17;Xhook=25.875;Yhook=-44.817;SimLen=2000;WavDir=0
+run task=Workflow1 workflow=Dynamic input=Heading=180;Xref=25.875;Yref=-62.817;Hs=3;Tp=11;Xhook=25.875;Yhook=-44.817;SimLen=2000;WavDir=0
 
