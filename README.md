@@ -155,7 +155,7 @@ In order to be able to run the DT framework and SIMA model, SIMA has to be downl
 
 3. Prediction:
     Open `Launch_DT_framework`. Within this file multiple parameters can be adjusted for the SIMA simulation, and all relevant file paths needs to be updated as mentioned over.
-    The `MLSTM_MODEL_NAME = "Option3_LT_WD0"` needs to be set to a valid trained model folder name. The `Prediction_state = "PtfmTDZ_SOV"` needs to be set to a valid state used on training, from `wave.yaml`.
+    The `MLSTM_MODEL_NAME = "Option3_LT_WD0"` needs to be set to a valid trained model folder name. The `Prediction_state = "PtfmTDZ_SOV"` needs to be set to a valid state used on training, from `wave.yaml`. When the SIMA Workflow simulation is done, the external program block automatically trigger this Python environment. The measured states and wave elevation are sent to "Incoming_Waves" folder, and utilized for prediction.
 
 
 ## Acknowledgements
