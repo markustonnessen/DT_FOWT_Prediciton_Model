@@ -8,8 +8,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-Case_nr = 'CASE_EX'
-
 def save_prediction_csv(t_pred, y_hat, pred_error_x, pred_error_y, prediction_history, Prediction_state, save_time, required_measurements, data_source, MLSTM_MODEL_NAME, WavDir):
     print("Saving results to csv")
 
@@ -40,7 +38,7 @@ def save_prediction_csv(t_pred, y_hat, pred_error_x, pred_error_y, prediction_hi
 
     # Dynamic filenames
     # prediction_results_path = os.path.join(prediction_results_dir, f"PREDICTION_{save_time_str}s_{source_tag}_ACTIVE.csv")
-    prediction_history_path = os.path.join(prediction_results_dir, f"PRED_HISTORY_{save_time_str}s_{source_tag}_WD{WavDir}_{Case_nr}.csv")
+    prediction_history_path = os.path.join(prediction_results_dir, f"PRED_HISTORY_{save_time_str}s_{source_tag}_WD{WavDir}.csv")
 
     # Define DOFs in degrees
     angle_dofs = [
