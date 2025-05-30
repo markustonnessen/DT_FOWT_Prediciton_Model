@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def save_prediction_csv(t_pred, y_hat, pred_error_x, pred_error_y, prediction_history, Prediction_state, save_time, required_measurements, data_source, MLSTM_MODEL_NAME, WavDir):
+def save_prediction_csv(t_pred, y_hat, pred_error_x, pred_error_y, prediction_history, Prediction_state, save_time, required_measurements, data_source, MLSTM_MODEL_NAME, WavDir, CaseNr):
     print("Saving results to csv")
 
     # Round sim length for filename
@@ -17,6 +17,7 @@ def save_prediction_csv(t_pred, y_hat, pred_error_x, pred_error_y, prediction_hi
 
     base_dir = os.path.dirname(__file__)
     wavdir = WavDir
+    CaseNr = CaseNr
 
     if "Option1" in MLSTM_MODEL_NAME:
         option_label = "Option1"
@@ -29,7 +30,7 @@ def save_prediction_csv(t_pred, y_hat, pred_error_x, pred_error_y, prediction_hi
     else:
         option_label = "Unknown"
 
-    subfolder_name = f"{option_label}_WD{wavdir}"
+    subfolder_name = f"{option_label}_WD{wavdir}_{CaseNr}"
 
     # Build full save path
     base_dir = os.path.dirname(__file__)
@@ -38,7 +39,7 @@ def save_prediction_csv(t_pred, y_hat, pred_error_x, pred_error_y, prediction_hi
 
     # Dynamic filenames
     # prediction_results_path = os.path.join(prediction_results_dir, f"PREDICTION_{save_time_str}s_{source_tag}_ACTIVE.csv")
-    prediction_history_path = os.path.join(prediction_results_dir, f"PRED_HISTORY_{save_time_str}s_{source_tag}_WD{WavDir}.csv")
+    prediction_history_path = os.path.join(prediction_results_dir, f"PRED_HISTORY_{save_time_str}s_{source_tag}_WD{WavDir}_{CaseNr}.csv")
 
     # Define DOFs in degrees
     angle_dofs = [

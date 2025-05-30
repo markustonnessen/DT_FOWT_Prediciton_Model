@@ -6,15 +6,16 @@ from matplotlib.lines import Line2D
 
 # === CONFIGURATION ===
 base_dir = os.path.join(os.path.dirname(__file__), "prediction_results")
-time_str = "590s"
-time_str2 = '590.0'
-WavDir = 0
+time_str = "1790s"
+time_str2 = '1790.0'
+WavDir = 30
 option_label = 'Option2'
+CaseNr = 'Case5'
 
 # === APPLY OFFSETS TO PARAMETERS ===
 APPLY_OFFSETS = True 
 DOF_OFFSETS = {
-    "telescoping": 5.0,
+    "telescoping": -2.0,
     "luffing": 0.0,
     "slewing": 0.0,
     "telescoping_vel": 0.0,
@@ -24,16 +25,16 @@ DOF_OFFSETS = {
 
 # === FILE PATHS ===
 prediction_dir = os.path.join(base_dir, "..", "prediction_results")
-prediction_dir_Floater = os.path.join(base_dir, "..", "prediction_results", f"{option_label}_Floater_WD{WavDir}")
-prediction_dir_SOV = os.path.join(base_dir, "..", "prediction_results", f"{option_label}_SOV_WD{WavDir}")
+prediction_dir_Floater = os.path.join(base_dir, "..", "prediction_results", f"{option_label}_Floater_WD{WavDir}_{CaseNr}")
+prediction_dir_SOV = os.path.join(base_dir, "..", "prediction_results", f"{option_label}_SOV_WD{WavDir}_{CaseNr}")
 
-meas_sov_file = os.path.join(prediction_dir_SOV, f"measurements_{time_str2}_Option2_sov_WD{WavDir}.csv")
-meas_floater_file = os.path.join(prediction_dir_Floater, f"measurements_{time_str2}_Option2_floater_WD{WavDir}.csv")
+meas_sov_file = os.path.join(prediction_dir_SOV, f"measurements_{time_str2}_Option2_sov_WD{WavDir}_{CaseNr}.csv")
+meas_floater_file = os.path.join(prediction_dir_Floater, f"measurements_{time_str2}_Option2_floater_WD{WavDir}_{CaseNr}.csv")
 
-pred_sov_file = os.path.join(prediction_dir_SOV, f"PRED_HISTORY_{time_str}_Option2_sov_WD{WavDir}.csv")
-pred_floater_file = os.path.join(prediction_dir_Floater, f"PRED_HISTORY_{time_str}_Option2_floater_WD{WavDir}.csv")
+pred_sov_file = os.path.join(prediction_dir_SOV, f"PRED_HISTORY_{time_str}_Option2_sov_WD{WavDir}_{CaseNr}.csv")
+pred_floater_file = os.path.join(prediction_dir_Floater, f"PRED_HISTORY_{time_str}_Option2_floater_WD{WavDir}_{CaseNr}.csv")
 
-plot_subfolder = os.path.join(prediction_dir, f"{option_label}_WD{WavDir}")
+plot_subfolder = os.path.join(prediction_dir, f"{option_label}_WD{WavDir}_{CaseNr}")
 os.makedirs(plot_subfolder, exist_ok=True)
 
 # === LOAD DATA ===
@@ -140,7 +141,7 @@ df_pred = df_pred[(df_pred["Time"] >= t_min) & (df_pred["Time"] <= t_max)].reset
 
 # === PLOTTING ===
 fig, axs = plt.subplots(6, 1, figsize=(12, 18), sharex=True)
-xlim_min, xlim_max = df_pred["Time"].iloc[0], 600
+xlim_min, xlim_max = df_pred["Time"].iloc[0], 1800
 params = ["telescoping", "luffing", "slewing", "telescoping_vel", "luffing_vel", "slewing_vel"]
 
 for i, param in enumerate(params):
@@ -172,7 +173,8 @@ for i, param in enumerate(params):
 
 axs[-1].set_xlabel("Time [s]")
 fig.subplots_adjust(right=0.82)
-fig.suptitle(f"Predicted Gangway Motions and Velocities {option_label}", fontsize=15)
+fig.suptitle(f"Predicted Gangway Motions and Velocities {option_label}, Trained WD -60.0 deg, Predicted WD 0.0 deg", fontsize=15)
+# fig.suptitle(f"Predicted Gangway Motions and Velocities, Hs = 3.5m and Tp = 11s", fontsize=15)
 plt.tight_layout(rect=[0, 0, 1, 0.96])
 
 if APPLY_OFFSETS:
@@ -181,9 +183,9 @@ if APPLY_OFFSETS:
             df_pred[param] += DOF_OFFSETS[param]
 
 # === SAVE ===
-plot_path = os.path.join(plot_subfolder, f"GangwayComparison_Option2_{time_str}_WD_{WavDir}deg.pdf")
-df_meas.to_csv(os.path.join(plot_subfolder, f"MeasuredGangwayMotionsAndVelocities_Option2_{time_str}_WD_{WavDir}deg.csv"), index=False)
-df_pred.to_csv(os.path.join(plot_subfolder, f"PredictedGangwayMotionsAndVelocities_Option2_{time_str}_WD_{WavDir}deg.csv"), index=False)
+plot_path = os.path.join(plot_subfolder, f"GangwayComparison_Option2_{time_str}_WD_{WavDir}deg_{CaseNr}.pdf")
+df_meas.to_csv(os.path.join(plot_subfolder, f"MeasuredGangwayMotionsAndVelocities_Option2_{time_str}_WD_{WavDir}deg_{CaseNr}.csv"), index=False)
+df_pred.to_csv(os.path.join(plot_subfolder, f"PredictedGangwayMotionsAndVelocities_Option2_{time_str}_WD_{WavDir}deg_{CaseNr}.csv"), index=False)
 
 plt.savefig(plot_path, dpi=300)
 plt.show()

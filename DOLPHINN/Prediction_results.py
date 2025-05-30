@@ -25,20 +25,49 @@ DOF_OFFSETS = {
     "slewing_vel": 0.0
 }
 
+# def parse_subfolder_from_filename(filename):
+#     match_opt = re.search(r"_(Option\d+(?:_[A-Za-z]+)?)_", filename)
+#     match_wd = re.search(r"_WD(-?\d+)", filename) 
+#     option = match_opt.group(1) if match_opt else "Unknown"
+#     wavdir = match_wd.group(1) if match_wd else "0"
+#     CaseNr =  match_wd.group(1) if match_wd else "Case0"
+#     return f"{option}_WD{wavdir}_{CaseNr}"
+
+# subfolder = parse_subfolder_from_filename(pred_history_filename)
+# print(f"[INFO] Detected subfolder: {subfolder}")
+
+# try:
+#     WavDir = int(subfolder.split("_WD")[1])
+# except (IndexError, ValueError):
+#     WavDir = 0
+
+# try:
+#     CaseNr = int(subfolder.split("_")[1])
+# except (IndexError, ValueError):
+#     CaseNr = "Case0"
+
 def parse_subfolder_from_filename(filename):
     match_opt = re.search(r"_(Option\d+(?:_[A-Za-z]+)?)_", filename)
-    match_wd = re.search(r"_WD(-?\d+)", filename) 
+    match_wd = re.search(r"_WD(-?\d+)", filename)
+    match_case = re.search(r"_(Case\d+)", filename)  # NEW LINE to extract CaseNr
     option = match_opt.group(1) if match_opt else "Unknown"
     wavdir = match_wd.group(1) if match_wd else "0"
-    return f"{option}_WD{wavdir}"
+    CaseNr = match_case.group(1) if match_case else "Case0"  # FIXED LINE
+    return f"{option}_WD{wavdir}_{CaseNr}"
 
 subfolder = parse_subfolder_from_filename(pred_history_filename)
 print(f"[INFO] Detected subfolder: {subfolder}")
 
 try:
-    WavDir = int(subfolder.split("_WD")[1])
+    WavDir = int(subfolder.split("_WD")[1].split("_")[0])
 except (IndexError, ValueError):
     WavDir = 0
+
+try:
+    CaseNr = subfolder.split("_")[-1]  # FIXED LINE to correctly get "Case3"
+except (IndexError, ValueError):
+    CaseNr = "Case0"
+
 
 prediction_dir = os.path.join(os.path.dirname(__file__), "prediction_results", subfolder)
 
@@ -206,7 +235,7 @@ if sim_type == "Option3":
     axs[-1].set_xlabel("Time [s]")
     fig.suptitle(f"Predicted Gangway Motions and Velocities {option_label}", fontsize=15)
     plt.tight_layout(rect=[0, 0, 1, 0.96])
-    plot_path1 = os.path.join(prediction_dir, f"GangwayComparison_{option_label}_{save_time_str}s_WD_{WavDir}deg.pdf")
+    plot_path1 = os.path.join(prediction_dir, f"GangwayComparison_{option_label}_{save_time_str}s_WD_{WavDir}deg_{CaseNr}.pdf")
     fig.savefig(plot_path1, dpi=300)
     plt.show()
     print(f"[INFO] Saved DOF comparison plot to: {plot_path1}")
@@ -232,7 +261,7 @@ else:
     fig.suptitle(f"{option_label} Prediction vs. Measurements SIMA", fontsize=15)
 
     fig.tight_layout(rect=[0, 0, 1, 0.96])
-    plot_path1 = os.path.join(prediction_dir, f"{option_label}_DOFs_vs_Measurement_{save_time_str}s_WD{WavDir}deg.pdf")
+    plot_path1 = os.path.join(prediction_dir, f"{option_label}_DOFs_vs_Measurement_{save_time_str}s_WD{WavDir}deg_{CaseNr}.pdf")
     fig.savefig(plot_path1, dpi=300)
     print(f"[INFO] Saved DOF comparison plot to: {plot_path1}")
     plt.show()
@@ -376,11 +405,11 @@ if can_compute_gangway:
     fig2.subplots_adjust(right=0.82)
     fig2.suptitle(f"Predicted Gangway Motions and Velocities {option_label}", fontsize=15)
     plt.tight_layout(rect=[0, 0, 1, 0.96])
-    path2 = os.path.join(prediction_dir, f"GangwayComparison_{option_label}_{save_time_str}s_WD_{WavDir}deg.pdf")
+    path2 = os.path.join(prediction_dir, f"GangwayComparison_{option_label}_{save_time_str}s_WD_{WavDir}deg_{CaseNr}.pdf")
     plt.savefig(path2, dpi=300)
 
-    df_gangway_pred.to_csv(os.path.join(prediction_dir, f"PredictedGangwayMotionsAndVelocities_{option_label}_{save_time_str}s_WD_{WavDir}deg.csv"), index=False)
+    df_gangway_pred.to_csv(os.path.join(prediction_dir, f"PredictedGangwayMotionsAndVelocities_{option_label}_{save_time_str}s_WD_{WavDir}deg_{CaseNr}.csv"), index=False)
     if has_measured:
-        df_gangway_meas.to_csv(os.path.join(prediction_dir, f"MeasuredGangwayMotionsAndVelocities_{option_label}_{save_time_str}s_WD_{WavDir}deg.csv"), index=False)
+        df_gangway_meas.to_csv(os.path.join(prediction_dir, f"MeasuredGangwayMotionsAndVelocities_{option_label}_{save_time_str}s_WD_{WavDir}deg_{CaseNr}.csv"), index=False)
 
     plt.show()

@@ -36,9 +36,9 @@ def get_model_config(model_name):
         raise ValueError(f"[ERROR] 'dof' field missing or empty in config.yaml at: {config_path}")
     
     training_path = config.get("training_dataset", "")
-    if "Floater" in training_path:
+    if "Floater" in training_path or "FLOATER" in training_path:
         source = "Option2_Floater"
-    elif "SOV" in training_path:
+    elif "Sov" in training_path or "SOV" in training_path:
         source = "Option2_SOV"
     elif "Option3" in training_path:
         source = "Option3"
@@ -63,6 +63,7 @@ Prediction_state = globals().get("Prediction_state", "PtfmTDX_Floater")
 early_stop_enabled = globals().get("early_stop_enabled", False)
 early_stop_time = globals().get("early_stop_time", 600)
 WavDir = globals().get("WavDir", 0)
+CaseNr = globals().get("CaseNr", "Case0")
 
 required_measurements, data_source = get_model_config(MLSTM_MODEL_NAME)
 print(f"[INFO] Using DOFs from config.yaml: {required_measurements}")
@@ -145,7 +146,8 @@ for _, row in df_motion.iterrows():
         sim_length=sim_length,
         required_measurements=required_measurements,
         data_source=data_source,
-        WavDir = WavDir
+        WavDir = WavDir,
+        CaseNr = CaseNr
     )
 
 print("\n[INFO] Done! Predictions have been generated.\n")
@@ -155,8 +157,8 @@ sim_type = data_source.capitalize()
 save_time_str_decimal = f"{save_csv_time:.1f}"
 save_time_str_int = str(int(save_csv_time)) 
 
-measurement_file = f"measurements_{save_time_str_decimal}_{sim_type}_WD{WavDir}.csv"
-pred_history_file = f"PRED_HISTORY_{save_time_str_int}s_{sim_type}_WD{WavDir}.csv"
+measurement_file = f"measurements_{save_time_str_decimal}_{sim_type}_WD{WavDir}_{CaseNr}.csv"
+pred_history_file = f"PRED_HISTORY_{save_time_str_int}s_{sim_type}_WD{WavDir}_{CaseNr}.csv"
 
 plot_script_path = os.path.join(os.path.dirname(__file__), "Prediction_results.py")
 if os.path.exists(plot_script_path):

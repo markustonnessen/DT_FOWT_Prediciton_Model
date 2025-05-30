@@ -195,15 +195,15 @@ def extract_and_save_csv(h5_input_arg, timestep):
     for i in range(num_steps):
         v_A_sov = np.array([XLvelocity_SOV[i], YLvelocity_SOV[i], ZLvelocity_SOV[i]])
         omega_sov = np.array([XLang_vel_SOV[i], YLang_vel_SOV[i], ZLang_vel_SOV[i]])
-        v_local = transform_velocity(v_A_sov, omega_sov, gangway_position)
+        v_local_sov = transform_velocity(v_A_sov, omega_sov, gangway_position)
         R_sov = euler_to_rotation_matrix(np.deg2rad(PtfmRDX_SOV[i]), np.deg2rad(PtfmRDY_SOV[i]), np.deg2rad(PtfmRDZ_SOV[i]))
-        V_gangway_global.append(R_sov @ v_local)
+        V_gangway_global.append(R_sov @ v_local_sov)
 
         v_A_floater = np.array([XLvelocity_Floater[i], YLvelocity_Floater[i], ZLvelocity_Floater[i]])
         omega_floater = np.array([XLang_vel_Floater[i], YLang_vel_Floater[i], ZLang_vel_Floater[i]])
-        v_local = transform_velocity(v_A_floater, omega_floater, hookup_position)
+        v_local_floater = transform_velocity(v_A_floater, omega_floater, hookup_position)
         R_floater = euler_to_rotation_matrix(np.deg2rad(PtfmRDX_Floater[i]), np.deg2rad(PtfmRDY_Floater[i]), np.deg2rad(PtfmRDZ_Floater[i]))
-        V_hookup_global.append(R_floater @ v_local)
+        V_hookup_global.append(R_floater @ v_local_floater)
 
     V_gangway_global = np.array(V_gangway_global)
     V_hookup_global = np.array(V_hookup_global)

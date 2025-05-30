@@ -19,7 +19,7 @@ class PredictionClass():
         self.iteration_count = 0                 # Initialize the iteration count outside the loop
         self.full_measurements = []              # To store all measurements for all timesteps
 
-    def run_simulation(self, current_time, measurements, plot_figure, time_horizon, pred_error_x, pred_error_y, pred_freq, save_csv, save_csv_time, FUTURE_WAVE_FILE, Prediction_state, MLSTM_MODEL_NAME, DOLPHINN_PATH, sim_length, required_measurements, data_source, WavDir):
+    def run_simulation(self, current_time, measurements, plot_figure, time_horizon, pred_error_x, pred_error_y, pred_freq, save_csv, save_csv_time, FUTURE_WAVE_FILE, Prediction_state, MLSTM_MODEL_NAME, DOLPHINN_PATH, sim_length, required_measurements, data_source, WavDir, CaseNr):
     
         from DOLPHINN.MLSTM_predictor import run_DOLPHINN
 
@@ -73,7 +73,7 @@ class PredictionClass():
         if len(self.batch_data) >= self.batch_size and current_time % pred_freq == 0:
             data_frame_inputs = pd.DataFrame(self.batch_data, columns=['Time', 'wave'] + required_measurements)
             print("Running MLSTM with input data frame shape:", data_frame_inputs.shape)
-            self.t_pred, self.y_hat = run_DOLPHINN(data_frame_inputs, DOLPHINN_PATH, plot_figure, current_time,pred_error_x, pred_error_y, save_csv, save_csv_time,Prediction_state, sim_length, required_measurements, data_source, MLSTM_MODEL_NAME, WavDir)
+            self.t_pred, self.y_hat = run_DOLPHINN(data_frame_inputs, DOLPHINN_PATH, plot_figure, current_time,pred_error_x, pred_error_y, save_csv, save_csv_time,Prediction_state, sim_length, required_measurements, data_source, MLSTM_MODEL_NAME, WavDir, CaseNr)
             if save_csv and not self.csv_saved and current_time >= save_csv_time:
                 self.csv_saved = True
 
@@ -98,7 +98,7 @@ class PredictionClass():
             else:
                 option_label = "Unknown"
 
-            subfolder_name = f"{option_label}_WD{WavDir}"
+            subfolder_name = f"{option_label}_WD{WavDir}_{CaseNr}"
 
             # Build full save path
             base_dir = os.path.dirname(__file__)
@@ -107,7 +107,7 @@ class PredictionClass():
             
             full_measurements_df = pd.DataFrame(self.full_measurements, columns=['Time'] + required_measurements)
             source_tag = data_source.capitalize()
-            full_output_file_path = os.path.join(prediction_results_dir, f"measurements_{current_time}_{source_tag}_WD{WavDir}.csv")
+            full_output_file_path = os.path.join(prediction_results_dir, f"measurements_{current_time}_{source_tag}_WD{WavDir}_{CaseNr}.csv")
             full_measurements_df.to_csv(full_output_file_path, index=False)
             print(f"[INFO] SAVED measurements at t = {current_time} to: {full_output_file_path}")
 
