@@ -9,7 +9,7 @@ input_h5_path = r"C:\Users\marku\Documents\DT_prediction_model\DOLPHINN\data\Wav
 output_csv_path = r"C:\Users\marku\Documents\DT_prediction_model\DOLPHINN\data\WaveDir_0.csv"
 
 # === CHOOSE WHICH CONDITION SETS FROM RAN SIMA SIMULATION, TO INCLUDE ===
-condition_range = (1, 4)
+condition_range = (1, 10)
 
 # === OPEN HDF5 FILE ===
 hf = h5py.File(input_h5_path, 'r')
@@ -142,15 +142,15 @@ for condition in condition_sets:
             roll_sov = data['SOV Data']['SOV - X Rotation'].iloc[i]
             pitch_sov = data['SOV Data']['SOV - Y Rotation'].iloc[i]
             yaw_sov = data['SOV Data']['SOV - Z Rotation'].iloc[i]
-            R = euler_to_rotation_matrix(roll_sov, pitch_sov, yaw_sov)
+            R_sov = euler_to_rotation_matrix(roll_sov, pitch_sov, yaw_sov)
+            updated_gangway_positions.append((R_sov @ gangway_position).flatten())
 
         for i in range(len(data['floater Data'])):
             roll_floater = data['floater Data']['floater - X Rotation'].iloc[i]
             pitch_floater = data['floater Data']['floater - Y Rotation'].iloc[i]
             yaw_floater = data['floater Data']['floater - Z Rotation'].iloc[i]
-            R = euler_to_rotation_matrix(roll_floater, pitch_floater, yaw_floater)
-            updated_gangway_positions.append((R @ gangway_position).flatten())
-            updated_hookup_positions.append((R @ hookup_position).flatten())
+            R_floater = euler_to_rotation_matrix(roll_floater, pitch_floater, yaw_floater)
+            updated_hookup_positions.append((R_floater @ hookup_position).flatten())
 
         updated_gangway_positions_df = pd.DataFrame(updated_gangway_positions, columns=['X_gangway', 'Y_gangway', 'Z_gangway'])
         updated_hookup_positions_df = pd.DataFrame(updated_hookup_positions, columns=['X_hookup', 'Y_hookup', 'Z_hookup'])
@@ -191,15 +191,15 @@ for condition in condition_sets:
                             global_sov_data.loc[i, 'SOV - Z Angular Velocity']])
             v_trans = transform_velocity(v_A, omega, gangway_position)
             transformed_gangway_velocities.append(v_trans)
-        V_gangway_local = np.stack(transformed_gangway_velocities, axis=0)
+        V_gangway_local_sov = np.stack(transformed_gangway_velocities, axis=0)
         
-        theta_x = global_sov_data['SOV - X Rotation'].to_numpy()
-        theta_y = global_sov_data['SOV - Y Rotation'].to_numpy()
-        theta_z = global_sov_data['SOV - Z Rotation'].to_numpy()
-        rotation_matrices = np.array([euler_to_rotation_matrix(rx, ry, rz) 
-                                    for rx, ry, rz in zip(theta_x, theta_y, theta_z)])
-        V_gangway_global = np.einsum('ijk,ik->ij', rotation_matrices, V_gangway_local)
-        
+        theta_x_sov = global_sov_data['SOV - X Rotation'].to_numpy()
+        theta_y_sov = global_sov_data['SOV - Y Rotation'].to_numpy()
+        theta_z_sov = global_sov_data['SOV - Z Rotation'].to_numpy()
+        rotation_matrices_sov = np.array([euler_to_rotation_matrix(rx_sov, ry_sov, rz_sov) 
+                                    for rx_sov, ry_sov, rz_sov in zip(theta_x_sov, theta_y_sov, theta_z_sov)])
+        V_gangway_global = np.einsum('ijk,ik->ij', rotation_matrices_sov, V_gangway_local_sov)
+        # -----------------------------------------------------------------------------------
         transformed_hookup_velocities = []
         for i in range(len(global_floater_data)):
             v_A = np.array([global_floater_data.loc[i, 'floater - X Velocity'],
@@ -210,7 +210,14 @@ for condition in condition_sets:
                             global_floater_data.loc[i, 'floater - Z Angular Velocity']])
             v_trans = transform_velocity(v_A, omega, hookup_position)
             transformed_hookup_velocities.append(v_trans)
-        V_hookup_global = np.stack(transformed_hookup_velocities, axis=0)
+        V_hookup_local_floater = np.stack(transformed_hookup_velocities, axis=0)
+
+        theta_x_floater = global_floater_data['floater - X Rotation'].to_numpy()
+        theta_y_floater = global_floater_data['floater - Y Rotation'].to_numpy()
+        theta_z_floater = global_floater_data['floater - Z Rotation'].to_numpy()
+        rotation_matrices = np.array([euler_to_rotation_matrix(rx_floater, ry_floater, rz_floater) 
+                                    for rx_floater, ry_floater, rz_floater in zip(theta_x_floater, theta_y_floater, theta_z_floater)])
+        V_hookup_global = np.einsum('ijk,ik->ij', rotation_matrices, V_hookup_local_floater)
 
 
         d_vector_x = global_gangway_data['X'] - global_hookup_data['X']
