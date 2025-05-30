@@ -20,12 +20,13 @@ SimLen = 2000
 WavDir = 0
 
 ## --- MLSTM & PREDICTION PARAMETERS ---
-MLSTM_MODEL_NAME = "Option2_LT_WD0_SOV"
-Prediction_state = "PtfmTDZ_SOV"
+MLSTM_MODEL_NAME = "Option2_WD0_SOV_Case3_test"
+Prediction_state = "PtfmTDX_SOV"
+CaseNr = "Case60"
 plot_figure = True
 
 timestep = 0.25
-time_horizon = 20.0
+time_horizon = 60.0
 pred_error_x = 0.0
 pred_error_y = 0.0
 pred_freq = 5.0
@@ -99,6 +100,7 @@ ax.plot([xref, x_front], [yref, y_front], color='blue', linewidth=2)
 ax.plot([xref, x_aft], [yref, y_aft], color='blue', linewidth=2)
 
 gangway_distance = np.sqrt((xhook - xref) ** 2 + (yhook - yref) ** 2)
+print(gangway_distance)
 plt.title("SIMA Setup Layout")
 plt.show()
 
@@ -119,7 +121,8 @@ params = {
     "Prediction_state": Prediction_state,
     "early_stop_enabled": early_stop_enabled,
     "early_stop_time": early_stop_time,
-    "WavDir": WavDir
+    "WavDir": WavDir,
+    "CaseNr": CaseNr
 }
 
 with open(args_path, "w") as f:
