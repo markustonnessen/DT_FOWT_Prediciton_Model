@@ -23,7 +23,7 @@ if os.path.exists(params_file):
 
 # ------------------- FUNCTION TO GET REQUIRED MEASUREMENTS --------------------
 def get_model_config(model_name):
-    base_dir = os.path.dirname(__file__)  # Absolute path to DOLPHINN/
+    base_dir = os.path.dirname(__file__) 
     config_path = os.path.join(base_dir, "saved_models", model_name, "wave_model", "config.yaml")
 
     if not os.path.exists(config_path):

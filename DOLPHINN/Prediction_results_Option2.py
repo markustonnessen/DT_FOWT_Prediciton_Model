@@ -6,16 +6,16 @@ from matplotlib.lines import Line2D
 
 # === CONFIGURATION ===
 base_dir = os.path.join(os.path.dirname(__file__), "prediction_results")
-time_str = "1790s"
-time_str2 = '1790.0'
-WavDir = 30
+time_str = "590s"
+time_str2 = '590.0'
+WavDir = 0
 option_label = 'Option2'
-CaseNr = 'Case5'
+CaseNr = 'Case3'
 
 # === APPLY OFFSETS TO PARAMETERS ===
 APPLY_OFFSETS = True 
 DOF_OFFSETS = {
-    "telescoping": -2.0,
+    "telescoping": 0.0,
     "luffing": 0.0,
     "slewing": 0.0,
     "telescoping_vel": 0.0,
@@ -141,7 +141,7 @@ df_pred = df_pred[(df_pred["Time"] >= t_min) & (df_pred["Time"] <= t_max)].reset
 
 # === PLOTTING ===
 fig, axs = plt.subplots(6, 1, figsize=(12, 18), sharex=True)
-xlim_min, xlim_max = df_pred["Time"].iloc[0], 1800
+xlim_min, xlim_max = df_pred["Time"].iloc[0], 600
 params = ["telescoping", "luffing", "slewing", "telescoping_vel", "luffing_vel", "slewing_vel"]
 
 for i, param in enumerate(params):
@@ -173,7 +173,7 @@ for i, param in enumerate(params):
 
 axs[-1].set_xlabel("Time [s]")
 fig.subplots_adjust(right=0.82)
-fig.suptitle(f"Predicted Gangway Motions and Velocities {option_label}, Trained WD -60.0 deg, Predicted WD 0.0 deg", fontsize=15)
+fig.suptitle(f"Predicted Gangway Motions and Velocities {option_label}", fontsize=15)
 # fig.suptitle(f"Predicted Gangway Motions and Velocities, Hs = 3.5m and Tp = 11s", fontsize=15)
 plt.tight_layout(rect=[0, 0, 1, 0.96])
 

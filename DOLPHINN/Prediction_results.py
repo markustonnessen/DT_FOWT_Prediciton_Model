@@ -17,34 +17,13 @@ else:
 
 APPLY_OFFSETS = False
 DOF_OFFSETS = {
-    "telescoping": 1.0,
+    "telescoping": 0.0,
     "luffing": 0.0,
     "slewing": 0.0,
     "telescoping_vel": 0.0,
     "luffing_vel": 0.0,
     "slewing_vel": 0.0
 }
-
-# def parse_subfolder_from_filename(filename):
-#     match_opt = re.search(r"_(Option\d+(?:_[A-Za-z]+)?)_", filename)
-#     match_wd = re.search(r"_WD(-?\d+)", filename) 
-#     option = match_opt.group(1) if match_opt else "Unknown"
-#     wavdir = match_wd.group(1) if match_wd else "0"
-#     CaseNr =  match_wd.group(1) if match_wd else "Case0"
-#     return f"{option}_WD{wavdir}_{CaseNr}"
-
-# subfolder = parse_subfolder_from_filename(pred_history_filename)
-# print(f"[INFO] Detected subfolder: {subfolder}")
-
-# try:
-#     WavDir = int(subfolder.split("_WD")[1])
-# except (IndexError, ValueError):
-#     WavDir = 0
-
-# try:
-#     CaseNr = int(subfolder.split("_")[1])
-# except (IndexError, ValueError):
-#     CaseNr = "Case0"
 
 def parse_subfolder_from_filename(filename):
     match_opt = re.search(r"_(Option\d+(?:_[A-Za-z]+)?)_", filename)
