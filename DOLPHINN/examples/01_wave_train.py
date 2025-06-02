@@ -13,7 +13,7 @@ In this example:
 """
 
 # Configure
-TEST = "Option2_LT_WD0_Floater"  
+TEST = "Option2_WD30_SOV_Case3"  
 CONFIG_FILE_PATH = os.path.join("DOLPHINN", "dol_input", "wave.yaml")
 if not os.path.exists(os.path.join("DOLPHINN","training_results", f"{TEST}")):
     os.makedirs(os.path.join("DOLPHINN","training_results", f"{TEST}"))
@@ -39,7 +39,7 @@ for i, (label, unit) in enumerate(zip(dol.dof, dol.unit)):
     ax.grid()
 
 plt.tight_layout()
-plt.savefig(os.path.join("DOLPHINN","training_results", f"{TEST}", "wave.png"), format="png", dpi=300)
+plt.savefig(os.path.join("DOLPHINN","training_results", f"{TEST}", f"wave_{TEST}.pdf"), format="pdf", dpi=300)
 
 # save dolphinn
 dol.save(os.path.join("DOLPHINN", "saved_models", f"{TEST}", "wave_model"))
