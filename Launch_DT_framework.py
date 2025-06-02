@@ -17,16 +17,16 @@ tp = 11
 xhook = 25.875
 yhook = -44.817
 SimLen = 2000
-WavDir = 0
+WavDir = 30
 
 ## --- MLSTM & PREDICTION PARAMETERS ---
-MLSTM_MODEL_NAME = "Option2_WD0_SOV_Case3_test"
-Prediction_state = "PtfmTDX_SOV"
-CaseNr = "Case60"
+MLSTM_MODEL_NAME = "Option2_WD30_Floater_Case3"
+Prediction_state = "PtfmTDX_Floater"
+CaseNr = "Case3"
 plot_figure = True
 
 timestep = 0.25
-time_horizon = 60.0
+time_horizon = 20.0
 pred_error_x = 0.0
 pred_error_y = 0.0
 pred_freq = 5.0
